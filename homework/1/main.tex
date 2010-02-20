@@ -143,4 +143,43 @@ clean :
   rm -f $(PROJECT)
   rm -f $(OUTPUT)
 \end{verbatim}
+
+\section{Question 3}
+[50\%] Download the latest version of the Linpack benchmark from\\\texttt{http://www.netlib.org/benchmark/hpl/}. Compile it:
+
+\begin{enumerate}
+\item The tool ``\texttt{find}'', combined with ``\texttt{grep}'' is a good way 
+to look for files on directories under Linux. In general, ``\texttt{find | grep xxx}'' 
+finds a file that contains \texttt{xxx} in the subdirectories below the current 
+directory. Learn how to use ``\texttt{find}'' and ``\texttt{grep}''.
+\item Use your knowledge of ``\texttt{find}'' and ``\texttt{grep}'' to find a file 
+named ``\texttt{make\_generic}''. Change the permissions of \texttt{make\_generic} so 
+that it can be executed.
+\item Execute \texttt{make\_generic}. It should create a \texttt{Make.UNKNOWN}
+\item In \texttt{Make.UNKNOWN}, set the \texttt{TOPdir} variable to the directory 
+where Linpack is.
+\item Move \texttt{Make.UNKNOWN} to the Linpack top directory.
+\item Make the benchmark using “make”. For this, you will need the MPI runtime and blas 
+libraries, if you are working on your machine, you will have to install them, or if you 
+are working on a machine that belongs to UDel, please verify that they are available or 
+notify the instructor if they are not available so that a solution can be found.
+\item Run the tests as specified on the file INSTALL located in the top directory of 
+Linpack
+
+Run Linpack. 
+
+The file \texttt{TUNING} has information on how to modify the parameters of the benchmark.
+
+\item Modify the input parameters of the benchmark to get as much performance (GFLOPS) 
+as you can. With your report, provide a copy of the parameters you used and the results.
+\item Find a range of problem sizes that will be meaningful to analyze the performance 
+of a system as a function of problem size.
+\item Get a plot of performance as a function of problem size for the parameters 
+previously found, for the following systems:
+	\begin{enumerate}
+		\item \texttt{pacific.capsl.udel.edu}
+		\item \texttt{cluster.capsl.udel.edu}
+		\item Another computer
+	\end{enumerate}
+\end{enumerate}
 \end{document}
