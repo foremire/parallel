@@ -105,7 +105,42 @@ it's more and more energy efficient.
 
 \end{description}
 
-
 \end{enumerate}
 
+\section{Question 2}
+[15\%] Learn how to write a makefile: Write a makefile for the file hello.c that is 
+attached. The makefile should have the following rules:
+
+\begin{enumerate}
+\item An ÒallÓ rule that compiles the program using gcc and generates an executable 
+named ÒhelloÓ
+\item A ÒrunÓ rule that runs the program and redirects its output to the file Òout.txtÓ
+\item A ÒcleanÓ rule that deletes the executable and the output file created by the 
+previous rules.
+\item Attach the makefile to your homework
+\end{enumerate}
+Makefile:
+\begin{verbatim}
+OBJS = hello.o
+CC = cc
+CFLAGS = -c -g
+PROJECT = hello
+OUTPUT = out.txt
+
+$(PROJECT) : $(OBJS)
+  $(CC) $(OBJS) -o $(PROJECT)
+
+hello.o : hello.c
+  $(CC) $(CFLAGS) hello.c
+
+all : $(PROJECT)
+
+run : all
+  ./$(PROJECT) > $(OUTPUT)
+
+clean :
+  rm -f *.o
+  rm -f $(PROJECT)
+  rm -f $(OUTPUT)
+\end{verbatim}
 \end{document}
