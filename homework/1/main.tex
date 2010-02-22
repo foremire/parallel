@@ -145,7 +145,8 @@ clean :
 \end{verbatim}
 
 \section{Question 3}
-[50\%] Download the latest version of the Linpack benchmark from\\\texttt{http://www.netlib.org/benchmark/hpl/}. Compile it:
+[50\%] Download the latest version of the Linpack benchmark from\\
+\texttt{http://www.netlib.org/benchmark/hpl/}. Compile it:
 
 \begin{enumerate}
 \item The tool ``\texttt{find}'', combined with ``\texttt{grep}'' is a good way 
@@ -172,14 +173,35 @@ The file \texttt{TUNING} has information on how to modify the parameters of the 
 
 \item Modify the input parameters of the benchmark to get as much performance (GFLOPS) 
 as you can. With your report, provide a copy of the parameters you used and the results.
+
+Answer: 
+\begin{verbatim}
+mpirun -np 8 xhpl:
+
+T/V                N    NB     P     Q     Time        Gflops
+----------------------------------------------------------------
+WR00L2L2        1200     3     4     2     0.56        2.048e+00
+\end{verbatim}
+
 \item Find a range of problem sizes that will be meaningful to analyze the performance 
 of a system as a function of problem size.
+
+Answer: 500 800 1000 1200 1500 2000
+
 \item Get a plot of performance as a function of problem size for the parameters 
 previously found, for the following systems:
 	\begin{enumerate}
 		\item \texttt{pacific.capsl.udel.edu}
-		\item \texttt{cluster.capsl.udel.edu}
+		\item \texttt{yankees.acad.ece.udel.edu}
 		\item Another computer
 	\end{enumerate}
 \end{enumerate}
+
+Answer:
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=\textwidth, angle=0]{pacific.pdf}
+		\caption{\label{fig:pacific}Linpack Benchmark Over Different Problem Sizes}
+	\end{center}
+\end{figure}
 \end{document}
