@@ -35,6 +35,7 @@ int main( int argc, char *argv[] )
     MPI_Send(msg, strlen(msg) + 1, MPI_CHAR, dest, COMM_TAG, MPI_COMM_WORLD);
     printf(msg_template, myrank, myrank);
     fflush(stdout);
+    usleep(1000);
   }else{
     // or, it's a intermediate relay
     source = myrank - 1;
