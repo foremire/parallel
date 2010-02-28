@@ -15,6 +15,10 @@ int main( int argc, char * argv[]){
   }
 
   thread_num = atoi(argv[1]);
+  if(1 > thread_num){
+    exit(0);
+  }
+
   omp_set_num_threads(thread_num);
 
 #pragma omp parallel private (thread_id)
