@@ -19,7 +19,7 @@ $(PROJECT).o : $(PROJECT).cilk
 all : $(PROJECT)
 
 run : all
-	$(RUN_1) | tee $(OUTPUT)
+	$(RUN) | tee $(OUTPUT)
 
 clean :
 	rm -f *.o

@@ -1,25 +1,61 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
 
-cilk int f(int t)
-{
-  return( t + 2 );
+// Global varialbes
+#define TOSS_NUM 5
+#define TOTAL_RESULTS 32
+
+typedef struct _toss{
+  char try[TOSS_NUM];
+}toss;
+
+typedef struct _toss_result{
+  toss results[TOTAL_RESULTS];
+  int pos;
+}toss_result;
+
+cilk int head(int num, toss_result * result);
+cilk int tail(int num, toss_result * result);
+
+cilk int head(int num, toss_result * result){
+  int head_ret = 0;
+  int tail_ret = 0;
+
+  result->results[result->pos].try[num] = 1;
+  if(TOSS_NUM > num){
+    head_ret = spawn head(num + 1, result);
+    tail_ret = spawn tail(num + 1, result);
+    sync;
+  }
+  return 1;
 }
 
-int g(int t)
-{
-  return( t + 100 );
+cilk int tail(int num, toss_result * result){
+  int head_ret = 0;
+  int tail_ret = 0;
+
+  result->results[result->pos].try[num] = 0;
+  if(TOSS_NUM > num){
+    head_ret = spawn head(num + 1, result);
+    tail_ret = spawn tail(num + 1, result);
+    sync;
+  }
+  return 0;
 }
 
-cilk int main(int argc, char * argv[])
-{
-  int x;
-  int y;
-	
-  x = spawn f( 3 );
-  y = g( 8 );
-		
+
+cilk int main(int argc, char * argv[]){
+  //int cycle = 0;
+  int head_ret = 0;
+  int tail_ret = 0;
+
+  toss_result result;
+  result.pos = 0;
+  
+  head_ret = spawn head(0, &result);
+  tail_ret = spawn tail(0, &result);
   sync;
-  printf( "The sum is %d\n", x+y );
 
   return 0;
 }
