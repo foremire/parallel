@@ -41,7 +41,7 @@ int main( int argc, char *argv[] )
   // Get num of processes
   MPI_Comm_size(MPI_COMM_WORLD, &numprocesses);
  
-  // Get how many nubers should be processed per process
+  // Get how many numbers should be processed per process
   num_per_process = TOTAL_NUMBER / numprocesses;
   remainder = TOTAL_NUMBER % numprocesses;
 
@@ -68,7 +68,7 @@ int main( int argc, char *argv[] )
     }
     
     // calculate the sum of numbers on their part
-    for(cycle = 0; cycle <  num_per_process + remainder; ++ cycle){
+    for(cycle = 0; cycle < num_per_process + remainder; ++ cycle){
       sum += num_array[cycle];
     }
 
