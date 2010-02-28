@@ -39,7 +39,7 @@ cilk int head(int num, toss_result * result){
       result->lose ++;
     }
   }
-  return TOSS_HEAD;
+  return result->win;;
 }
 
 cilk int tail(int num, toss_result * result){
@@ -62,7 +62,7 @@ cilk int tail(int num, toss_result * result){
       result->lose ++;
     }
   }
-  return TOSS_TAIL;
+  return result->win;;
 }
 
 
@@ -84,6 +84,7 @@ cilk int main(int argc, char * argv[]){
   lose = result[0].lose + result[1].lose;
   //printf("0.Win %d times, Lose %d times\n", result[0].win, result[0].lose);
   //printf("1.Win %d times, Lose %d times\n", result[1].win, result[1].lose);
+  //printf("Win %d times, Lose %d times\n", head_ret + tail_ret, lose);
   printf("Win %d times, Lose %d times\n", win, lose);
 
   return 0;
