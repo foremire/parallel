@@ -1,0 +1,26 @@
+#include <stdio.h>
+
+cilk int f(int t)
+{
+  return( t + 2 );
+}
+
+int g(int t)
+{
+  return( t + 100 );
+}
+
+cilk int main(int argc, char * argv[])
+{
+  int x;
+  int y;
+	
+  x = spawn f( 3 );
+  y = g( 8 );
+		
+  sync;
+  printf( "The sum is %d\n", x+y );
+
+  return 0;
+}
+
