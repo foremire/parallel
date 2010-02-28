@@ -80,7 +80,15 @@ int main( int argc, char *argv[] )
         MPI_COMM_WORLD, &status);
       sum += partial_sum;
     }
-    printf("sum: %d\n", sum);
+    printf("parallel sum: %d\n", sum);
+
+    // check with the serial sum
+    sum = 0;
+    for(cycle = 0; cycle < TOTAL_NUMBER; ++ cycle){
+      sum += num_array[cycle];
+    }
+    printf("serial sum: %d\n", sum);
+
   }else{
     source = 0;
     // wait for the random numbers to be ready
