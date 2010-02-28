@@ -1,18 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <string.h>
 
 // Global varialbes
 #define TOSS_NUM 5
-#define TOTAL_RESULTS 32
-
-typedef struct _toss{
-  char try[TOSS_NUM];
-}toss;
+#define WIN_THRESHOLD 3
+#define TOSS_HEAD 1
+#define TOSS_TAIL 0
 
 typedef struct _toss_result{
-  toss results[TOTAL_RESULTS];
-  int pos;
+  int head;
+  int tail;
+  int win;
+  int lose;
 }toss_result;
 
 cilk int head(int num, toss_result * result);
@@ -22,26 +23,46 @@ cilk int head(int num, toss_result * result){
   int head_ret = 0;
   int tail_ret = 0;
 
-  result->results[result->pos].try[num] = 1;
   if(TOSS_NUM > num){
+    //ramification start
+    result->head ++;
     head_ret = spawn head(num + 1, result);
     tail_ret = spawn tail(num + 1, result);
     sync;
+    //ramification end
+    result->head --;
+  }else{
+    // this is the last try
+    if(result->head + 1 >= WIN_THRESHOLD){
+      result->win ++;
+    }else{
+      result->lose ++;
+    }
   }
-  return 1;
+  return TOSS_HEAD;
 }
 
 cilk int tail(int num, toss_result * result){
   int head_ret = 0;
   int tail_ret = 0;
 
-  result->results[result->pos].try[num] = 0;
   if(TOSS_NUM > num){
+    //ramification start
+    result->tail ++;
     head_ret = spawn head(num + 1, result);
     tail_ret = spawn tail(num + 1, result);
     sync;
+    //ramification end
+    result->tail --;
+  }else{
+    // this is the last try
+    if(result->head >= WIN_THRESHOLD){
+      result->win ++;
+    }else{
+      result->lose ++;
+    }
   }
-  return 0;
+  return TOSS_TAIL;
 }
 
 
@@ -49,13 +70,21 @@ cilk int main(int argc, char * argv[]){
   //int cycle = 0;
   int head_ret = 0;
   int tail_ret = 0;
+  int win = 0;
+  int lose = 0;
 
-  toss_result result;
-  result.pos = 0;
+  toss_result result[2];
+  memset(result, 0, 2 * sizeof(toss_result));
   
-  head_ret = spawn head(0, &result);
-  tail_ret = spawn tail(0, &result);
+  head_ret = spawn head(1, &result[0]);
+  tail_ret = spawn tail(1, &result[1]);
   sync;
+
+  win = result[0].win + result[1].win;
+  lose = result[0].lose + result[1].lose;
+  //printf("0.Win %d times, Lose %d times\n", result[0].win, result[0].lose);
+  //printf("1.Win %d times, Lose %d times\n", result[1].win, result[1].lose);
+  printf("Win %d times, Lose %d times\n", win, lose);
 
   return 0;
 }
