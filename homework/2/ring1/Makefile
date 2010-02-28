@@ -3,6 +3,7 @@ OBJS = $(PROJECT).o
 CC = mpicc
 CFLAGS = -c -g
 OUTPUT = results_ring1.txt
+RUN = mpirun -np 16
 
 $(PROJECT) : $(OBJS)
 	$(CC) $(OBJS) -o $(PROJECT)
@@ -13,7 +14,8 @@ $(PROJECT).o : $(PROJECT).c
 all : $(PROJECT)
 
 run : all
-	./$(PROJECT) > $(OUTPUT)
+#	$(RUN) $(PROJECT)
+	$(RUN) $(PROJECT) | tee $(OUTPUT)
 
 clean :
 	rm -f *.o

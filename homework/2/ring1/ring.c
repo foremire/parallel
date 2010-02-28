@@ -1,11 +1,13 @@
 #include <mpi.h>
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
 //global varialbes and definitions
 #define COMM_TAG 16314
 #define BUFF_SIZE 16
 char * msg = "Hi";
-char * msg_template = "Process number %d writes number %d";
+char * msg_template = "Process number %d writes number %d\n";
 
 
 int main( int argc, char *argv[] )
@@ -15,6 +17,7 @@ int main( int argc, char *argv[] )
   int source = 0;
   int dest = 0;
   char buffer[BUFF_SIZE];
+  MPI_Status status;
 
   // Init MPI
   MPI_Init( &argc, &argv );
@@ -31,14 +34,19 @@ int main( int argc, char *argv[] )
     dest = source + 1;
     MPI_Send(msg, strlen(msg) + 1, MPI_CHAR, dest, COMM_TAG, MPI_COMM_WORLD);
     printf(msg_template, myrank, myrank);
+    fflush(stdout);
   }else{
+    // or, it's a intermediate relay
     source = myrank - 1;
     dest = myrank + 1;
-    MPI_Recv(buffer, BUFF_SIZE, MPI_CHAR, source, COMM_TAG, MPI_COMM_WORLD);
+    // receive the message from the previus process
+    MPI_Recv(buffer, BUFF_SIZE, MPI_CHAR, source, COMM_TAG, MPI_COMM_WORLD, &status);
     printf(msg_template, myrank, myrank);
+    fflush(stdout);
 
     //relay the message to the next receiver
     if(dest < numprocesses){
+      usleep(1000);
       MPI_Send(msg, strlen(msg) + 1, MPI_CHAR, dest, COMM_TAG, MPI_COMM_WORLD);
     }
   }
