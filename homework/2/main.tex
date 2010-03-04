@@ -77,10 +77,14 @@ graph time vs number of threads. Comment about the results.
 
 \item[A:] The source code can be located in \texttt{omp\_parallel\_sum}.
 Type \texttt{make run} to compile and run the program with results
-generated.
+generated. The time vs number of threads was plotted in Fig.\ref{fig:omp_sum}.
+It's clear to find out that the running time reached mininum value when the 
+number of threads is 8, the same as the number of CPUs on the pacific machine.
+It's mainly because 8 threads can run on 8 cores simultaneously without context
+switch and reach maximum performance.
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=1.0\textwidth, angle=0]{omp_sum.pdf}
+		\includegraphics[width=0.9\textwidth, angle=0]{omp_sum.pdf}
 		\caption{\label{fig:omp_sum}OpemMP Sum time vs number of threads}
 	\end{center}
 \end{figure}
@@ -107,7 +111,11 @@ Measure the running time of the parallel computation and make a graph
 time vs number of threads. Comment about the results.
 \item[A:] The source code can be located in \texttt{pthread\_parallel\_sum}.
 Type \texttt{make run} to compile and run the program with results
-generated.
+generated. The time vs number of threads was plotted in Fig.\ref{fig:pthread_sum}.
+It's clear to find out that the running time reached mininum value when the 
+number of threads is 8, the same as number of CPUs on the pacific machine.
+It's mainly because 8 threads can run on 8 cores simultaneously without context
+switch and reach maximum performance.
 \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=1.0\textwidth, angle=0]{pthread_sum.pdf}
