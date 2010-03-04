@@ -8,7 +8,7 @@
 //global varialbes and definitions
 #define TOTAL_NUMBER 1000
 #define MAX_NUM 100
-char * usage = "usage: hello thread_num\n";
+char * usage = "usage: sum thread_num\n";
 char * msg_template = "hello world from thread %d of %d\n";
 
 int main( int argc, char * argv[]){
@@ -82,7 +82,8 @@ int main( int argc, char * argv[]){
  
   t1 = __start.tv_sec + (__start.tv_usec/1000000.0);
   t2 = __start.tv_sec + (__end.tv_usec/1000000.0);
-  printf("exec time: %.6lf\n", t2 - t1);
+  printf("running time: %.6lfs\n", t2 - t1);
+  //printf("%d %.6lf\n", thread_num, t2 - t1);
 
   return 0;
 }
