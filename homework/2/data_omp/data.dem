@@ -1,0 +1,11 @@
+set term post enh
+set output "omp_sum.eps"
+set title  "OpemMP Sum time vs number of threads"
+set xlabel "Threads"
+set ylabel "Time(s)"
+set ytics border in scale 1,0.5 mirror norotate  offset character 0, 0, 0 
+set xrange [ 1: 25 ] noreverse nowriteback
+set yrange [ 0.000000 : 0.002500 ] noreverse nowriteback
+set lmargin 9
+set rmargin 2
+plot 'data.txt' using 1:2 title "OpemMP SUm" with lines lt 1
