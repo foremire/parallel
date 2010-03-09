@@ -8,6 +8,7 @@
 //global varialbes and definitions
 #define OUTPUT_THRESHOLD 6
 #define BUFF_SIZE 16
+#define COMM_TAG 16314
 
 #define SAVE_FREE(addr)\
   if(NULL != addr){\
@@ -34,7 +35,7 @@ char * msg_no_task = "Process %d exit without no task.\n";
 void init_matrix(matrix * mat, int xDim, int yDim, int start, int random);
 void matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC);
 void safe_exit(matrix ma, matrix mb, matrix mc, matrix me);
-void print_matrix(double * matrix, int matrixSize);
+void print_matrix(matrix * mat);
 double get_duration(struct timeval __start);
 
 int main( int argc, char *argv[] )
@@ -134,11 +135,13 @@ int main( int argc, char *argv[] )
 
   matrix_mul(matrixA, matrixB, matrixC);
   for(cycleI = 0; cycleI < numprocesses; ++ cycleI){
+    // it's my turn, broadcast matrix B to other peers
     if(cycleI == myrank){
       MPI_Bcast(&matrixB, sizeof(matrix), MPI_CHAR, cycleI, MPI_COMM_WORLD);
       MPI_Bcast(matrixB.data, range_len * matrixSize, 
           MPI_DOUBLE, cycleI, MPI_COMM_WORLD);
     }else{
+      //otherwise, receive matrix Exchange from other peers
       MPI_Bcast(&matrixExchange, sizeof(matrix), MPI_CHAR, cycleI, MPI_COMM_WORLD);
       MPI_Bcast(matrixExchange.data, range_len * matrixSize, 
           MPI_DOUBLE, cycleI, MPI_COMM_WORLD);
@@ -150,6 +153,26 @@ int main( int argc, char *argv[] )
   
   // if the matrix size is below the threshold, output the result
   if(matrixSize < OUTPUT_THRESHOLD){
+    // start message relay ring from process 0
+    if(0 == myrank){
+      source = 0;
+      dest = source + 1;
+      MPI_Send(msg, strlen(msg) + 1, MPI_CHAR, dest, COMM_TAG, MPI_COMM_WORLD);
+      printf("MatrixC:\n");
+      print_matrix(&matrixC);
+    }else{
+      // or, it's a intermediate relay
+      source = myrank - 1;
+      dest = myrank + 1;
+      // receive the message from the previus process
+      MPI_Recv(buffer, BUFF_SIZE, MPI_CHAR, source, COMM_TAG, MPI_COMM_WORLD, &status);
+      print_matrix(&matrixC);
+
+      //relay the message to the next receiver
+      if(dest < numprocesses){
+        MPI_Send(msg, strlen(msg) + 1, MPI_CHAR, dest, COMM_TAG, MPI_COMM_WORLD);
+      }
+    }
   }
 
   Tt = Ti + Tc;
@@ -235,20 +258,24 @@ void safe_exit(matrix ma, matrix mb, matrix mc, matrix me){
   MPI_Finalize();
 }
 
-void print_matrix(double * matrix, int matrixSize){
+void print_matrix(matrix * mat){
   int cycleI = 0;
   int cycleJ = 0;
+  double val = 0.0;
 
-  for(cycleI = 0; cycleI < matrixSize; ++ cycleI){
-    for(cycleJ = 0; cycleJ < matrixSize; ++ cycleJ){
-      if(matrix[cycleI * matrixSize + cycleJ] > 0.0f){
-        printf("+%f\t", matrix[cycleI * matrixSize + cycleJ]);
+  for(cycleI = 0; cycleI < mat->yDim; ++ cycleI){
+    for(cycleJ = 0; cycleJ < mat->xDim; ++ cycleJ){
+      val = mat->data[cycleI * mat->xDim + cycleJ];
+      if(val > 0.0){
+        printf("+%f\t", val);
       }else{
-        printf("%f\t", matrix[cycleI * matrixSize + cycleJ]);
+        printf("%f\t", val);
       }
     }
     printf("\n");
   }
+  fflush(stdout);
+  usleep(1000);
 }
 
 double get_duration(struct timeval __start){
