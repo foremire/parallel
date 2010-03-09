@@ -35,6 +35,7 @@ void init_matrix(matrix * mat, int xDim, int yDim, int start, int random);
 void matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC);
 void safe_exit(matrix ma, matrix mb, matrix mc, matrix me);
 void print_matrix(double * matrix, int matrixSize);
+double get_duration(struct timeval __start);
 
 int main( int argc, char *argv[] )
 {
@@ -46,9 +47,6 @@ int main( int argc, char *argv[] )
   matrix matrixExchange;
   
   struct timeval __start;
-  struct timeval  __end;
-  double t_start = 0.0f;
-  double t_end = 0.0f;
   double Ti = 0.0f;
   double Tc = 0.0f;
   double Tt = 0.0f;
@@ -56,6 +54,7 @@ int main( int argc, char *argv[] )
   int cycleI = 0;
   int cycleJ = 0;
   int cycleK = 0;
+
   int remainder = 0;
   int num_per_process = 0;
   int range_start = 0;
@@ -120,41 +119,45 @@ int main( int argc, char *argv[] )
     exit(0);
   }
 
-  // initilize the matrices
   gettimeofday(&__start, NULL);
+
+  // initilize the matrices
   init_matrix(&matrixA, matrixSize, range_len, range_start, 1);
   init_matrix(&matrixB, range_len, matrixSize, range_start, 1);
   init_matrix(&matrixC, matrixSize, range_len, range_start, 0);
   init_matrix(&matrixExchange, matrixSize, (num_per_process + 1), 0, 0);
-  gettimeofday(&__end, NULL);
-  t_end = (__end.tv_sec + (__end.tv_usec/1000000.0));
-  t_start = (__start.tv_sec + (__start.tv_usec/1000000.0));
-  Ti = t_end - t_start;
 
-  gettimeofday(&__start, NULL);
+  Ti = get_duration(__start);
+
   // do the matrix multiplication
+  gettimeofday(&__start, NULL);
 
-  gettimeofday(&__end, NULL);
-  t_end = (__end.tv_sec + (__end.tv_usec/1000000.0));
-  t_start = (__start.tv_sec + (__start.tv_usec/1000000.0));
-  Tc = t_end - t_start;
+  matrix_mul(matrixA, matrixB, matrixC);
+  for(cycleI = 0; cycleI < numprocesses; ++ cycleI){
+    if(cycleI == myrank){
+      MPI_Bcast(&matrixB, sizeof(matrix), MPI_CHAR, cycleI, MPI_COMM_WORLD);
+      MPI_Bcast(matrixB.data, range_len * matrixSize, 
+          MPI_DOUBLE, cycleI, MPI_COMM_WORLD);
+    }else{
+      MPI_Bcast(&matrixExchange, sizeof(matrix), MPI_CHAR, cycleI, MPI_COMM_WORLD);
+      MPI_Bcast(matrixExchange.data, range_len * matrixSize, 
+          MPI_DOUBLE, cycleI, MPI_COMM_WORLD);
+      matrix_mul(matrixA, matrixExchange, matrixC);
+    }
+  }
 
-  Tt = Ti + Tc;
+  Tc = get_duration(__start);
   
   // if the matrix size is below the threshold, output the result
   if(matrixSize < OUTPUT_THRESHOLD){
-    //printf("MatrixA:\n");
-    //print_matrix(matrixA, matrixSize);
-    //printf("MatrixB:\n");
-    //print_matrix(matrixB, matrixSize);
-    //printf("MatrixC:\n");
-    //print_matrix(matrixC, matrixSize);
   }
 
+  Tt = Ti + Tc;
   //printf("Ti: %fs\n", Ti);
   //printf("Tc: %fs\n", Tc);
   //printf("Tt: %fs\n", Tt);
-
+  
+  safe_exit(matrixA, matrixB, matrixC, matrixExchange);
   return 0;
 }
 
@@ -246,4 +249,19 @@ void print_matrix(double * matrix, int matrixSize){
     }
     printf("\n");
   }
+}
+
+double get_duration(struct timeval __start){
+  struct timeval  __end;
+
+  double t_start = 0.0;
+  double t_end = 0.0;
+  double duration = 0.0;
+  
+  gettimeofday(&__end, NULL);
+  t_start = (__start.tv_sec + (__start.tv_usec/1000000.0));
+  t_end = (__end.tv_sec + (__end.tv_usec/1000000.0));
+  duration= t_end - t_start;
+
+  return duration;
 }
