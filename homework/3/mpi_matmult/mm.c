@@ -32,17 +32,19 @@ char * msg = "Hi";
 char * msg_template = "Process number %d writes number %d\n";
 char * msg_no_task = "Process %d exit without no task.\n";
 
+void init_matrix(matrix mat);
+void matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC);
+void safe_exit(matrix ma, matrix mb, matrix mc, matrix me);
 void print_matrix(double * matrix, int matrixSize);
 
 int main( int argc, char *argv[] )
 {
   int matrixSize = 0;
-  double * matrixA = NULL;
-  double * matrixB = NULL;
-  double * matrixC = NULL;
-  double * matrixExchange = NULL;
-  
-  struct timeval tv;
+
+  matrix matrixA;
+  matrix matrixB;
+  matrix matrixC;
+  matrix matrixExchange;
   
   struct timeval __start;
   struct timeval  __end;
@@ -108,8 +110,6 @@ int main( int argc, char *argv[] )
   range_len = range_end - range_start;
 
   //printf("Rank: %d\t Start: %d\t End: %d\n", myrank, range_start, range_end);
-  //fflush(stdout);
-  //usleep(1000);
   //exit(0);
 
   // These is no task for the current process, exit gracefully
@@ -118,40 +118,25 @@ int main( int argc, char *argv[] )
     MPI_Finalize();
     exit(0);
   }
-  matrixA = malloc( matrixSize * range_len * sizeof(double));
-  matrixB = malloc( matrixSize * range_len * sizeof(double));
-  matrixC = malloc( matrixSize * range_len * sizeof(double));
-  matrixExchange = malloc( matrixSize * (num_per_process + 1) * sizeof(double));
+  matrixA.data = malloc( matrixSize * range_len * sizeof(double));
+  matrixB.data = malloc( matrixSize * range_len * sizeof(double));
+  matrixC.data = malloc( matrixSize * range_len * sizeof(double));
+  matrixExchange.data = malloc( matrixSize * (num_per_process + 1) * sizeof(double));
 
-  if(!(matrixA && matrixB && matrixC && matrixExchange)){
+  if(!(matrixA.data && matrixB.data && matrixC.data && matrixExchange.data)){
     puts(malloc_error);
-    SAVE_FREE(matrixA);
-    SAVE_FREE(matrixB);
-    SAVE_FREE(matrixC);
-    SAVE_FREE(matrixExchange);
-    MPI_Finalize();
+    safe_exit(matrixA, matrixB, matrixC, matrixExchange);
     exit(-1);
   }
 
-  memset(matrixA, 0, matrixSize * range_len * sizeof(double));
-  memset(matrixB, 0, matrixSize * range_len * sizeof(double));
-  memset(matrixC, 0, matrixSize * range_len * sizeof(double));
-  memset(matrixExchange, 0, matrixSize * (num_per_process + 1) * sizeof(double));
-
-  //initilize random generator
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec * tv.tv_usec);
+  memset(matrixA.data, 0, matrixSize * range_len * sizeof(double));
+  memset(matrixB.data, 0, matrixSize * range_len * sizeof(double));
+  memset(matrixC.data, 0, matrixSize * range_len * sizeof(double));
+  memset(matrixExchange.data, 0, matrixSize * (num_per_process + 1) * sizeof(double));
 
   gettimeofday(&__start, NULL);
-  // initilize the matrix by random numbers between -1.00f and 1.00f
-  for(cycleI = 0; cycleI < range_len; ++ cycleI){
-    for(cycleJ = 0; cycleJ < matrixSize; ++ cycleJ){
-      matrixA[cycleI * matrixSize + cycleJ] = 
-        (double)rand() / ((double)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
-      matrixB[cycleI * matrixSize + cycleJ] = 
-        (double)rand() / ((double)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
-    }
-  }
+  init_matrix(matrixA);
+  init_matrix(matrixB);
   gettimeofday(&__end, NULL);
   t_end = (__end.tv_sec + (__end.tv_usec/1000000.0));
   t_start = (__start.tv_sec + (__start.tv_usec/1000000.0));
@@ -181,14 +166,25 @@ int main( int argc, char *argv[] )
   //printf("Tc: %fs\n", Tc);
   //printf("Tt: %fs\n", Tt);
 
-  SAVE_FREE(matrixA);
-  SAVE_FREE(matrixB);
-  SAVE_FREE(matrixC);
-  SAVE_FREE(matrixExchange);
-
-  // Finalize MPI
-  MPI_Finalize();
   return 0;
+}
+
+void init_matrix(matrix mat){
+  struct timeval tv;
+  int cycleI = 0;
+  int cycleJ = 0;
+
+  //initilize random generator
+  gettimeofday(&tv, NULL);
+  srand(tv.tv_sec * tv.tv_usec);
+
+  // initilize the matrix by random numbers between -1.00f and 1.00f
+  for(cycleI = 0; cycleI < mat.yDim; ++ cycleI){
+    for(cycleJ = 0; cycleJ < mat.xDim; ++ cycleJ){
+      mat.data[cycleI * mat.xDim + cycleJ] = 
+        (double)rand() / ((double)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
+    }
+  }
 }
 
 void matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC){
@@ -222,8 +218,14 @@ void matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC){
   }
 }
 
-void init_matrix(matrix mat, double * data, int xDim, int yDim){
+void safe_exit(matrix ma, matrix mb, matrix mc, matrix me){
+  SAVE_FREE(ma.data);
+  SAVE_FREE(mb.data);
+  SAVE_FREE(mc.data);
+  SAVE_FREE(me.data);
 
+  // Finalize MPI
+  MPI_Finalize();
 }
 
 void print_matrix(double * matrix, int matrixSize){
