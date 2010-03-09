@@ -20,7 +20,6 @@ typedef struct _matrix{
   int xDim;
   int yDim;
   int start;
-  int end;
 }matrix;
 
 char * usage = "Usage: mm N\n";
@@ -32,7 +31,7 @@ char * msg = "Hi";
 char * msg_template = "Process number %d writes number %d\n";
 char * msg_no_task = "Process %d exit without no task.\n";
 
-void init_matrix(matrix mat);
+void init_matrix(matrix * mat, int xDim, int yDim, int start, int random);
 void matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC);
 void safe_exit(matrix ma, matrix mb, matrix mc, matrix me);
 void print_matrix(double * matrix, int matrixSize);
@@ -67,7 +66,9 @@ int main( int argc, char *argv[] )
   int numprocesses = 0;
   int source = 0;
   int dest = 0;
+
   MPI_Status status;
+  MPI_Comm comm;
   
   char buffer[BUFF_SIZE];
 
@@ -118,25 +119,13 @@ int main( int argc, char *argv[] )
     MPI_Finalize();
     exit(0);
   }
-  matrixA.data = malloc( matrixSize * range_len * sizeof(double));
-  matrixB.data = malloc( matrixSize * range_len * sizeof(double));
-  matrixC.data = malloc( matrixSize * range_len * sizeof(double));
-  matrixExchange.data = malloc( matrixSize * (num_per_process + 1) * sizeof(double));
 
-  if(!(matrixA.data && matrixB.data && matrixC.data && matrixExchange.data)){
-    puts(malloc_error);
-    safe_exit(matrixA, matrixB, matrixC, matrixExchange);
-    exit(-1);
-  }
-
-  memset(matrixA.data, 0, matrixSize * range_len * sizeof(double));
-  memset(matrixB.data, 0, matrixSize * range_len * sizeof(double));
-  memset(matrixC.data, 0, matrixSize * range_len * sizeof(double));
-  memset(matrixExchange.data, 0, matrixSize * (num_per_process + 1) * sizeof(double));
-
+  // initilize the matrices
   gettimeofday(&__start, NULL);
-  init_matrix(matrixA);
-  init_matrix(matrixB);
+  init_matrix(&matrixA, matrixSize, range_len, range_start, 1);
+  init_matrix(&matrixB, range_len, matrixSize, range_start, 1);
+  init_matrix(&matrixC, matrixSize, range_len, range_start, 0);
+  init_matrix(&matrixExchange, matrixSize, (num_per_process + 1), 0, 0);
   gettimeofday(&__end, NULL);
   t_end = (__end.tv_sec + (__end.tv_usec/1000000.0));
   t_start = (__start.tv_sec + (__start.tv_usec/1000000.0));
@@ -169,20 +158,35 @@ int main( int argc, char *argv[] )
   return 0;
 }
 
-void init_matrix(matrix mat){
+void init_matrix(matrix * mat, int xDim, int yDim, int start, int random){
   struct timeval tv;
   int cycleI = 0;
   int cycleJ = 0;
+  int size = 0;
+
+  size = xDim * yDim;
+
+  mat->data = malloc(size * sizeof(double));
+  if(NULL == mat->data){
+    puts(malloc_error);
+    exit(-1);
+  }
+  memset(mat->data, 0, size * sizeof(double));
+  mat->xDim = xDim;
+  mat->yDim = yDim;
+  mat->start = start;
 
   //initilize random generator
   gettimeofday(&tv, NULL);
   srand(tv.tv_sec * tv.tv_usec);
 
-  // initilize the matrix by random numbers between -1.00f and 1.00f
-  for(cycleI = 0; cycleI < mat.yDim; ++ cycleI){
-    for(cycleJ = 0; cycleJ < mat.xDim; ++ cycleJ){
-      mat.data[cycleI * mat.xDim + cycleJ] = 
-        (double)rand() / ((double)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
+  if(random){
+    // initilize the matrix by random numbers between -1.00f and 1.00f
+    for(cycleI = 0; cycleI < mat->yDim; ++ cycleI){
+      for(cycleJ = 0; cycleJ < mat->xDim; ++ cycleJ){
+        mat->data[cycleI * mat->xDim + cycleJ] = 
+          (double)rand() / ((double)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
+      }
     }
   }
 }
