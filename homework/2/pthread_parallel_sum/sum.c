@@ -116,7 +116,7 @@ int main( int argc, char * argv[]){
   printf("serial sum: %d\n", sum);
  
   t1 = __start.tv_sec + (__start.tv_usec/1000000.0);
-  t2 = __start.tv_sec + (__end.tv_usec/1000000.0);
+  t2 = __end.tv_sec + (__end.tv_usec/1000000.0);
   printf("exec time: %.6lf\n", t2 - t1);
   //printf("%d %.6lf\n", thread_num, t2 - t1);
 
