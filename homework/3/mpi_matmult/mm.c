@@ -8,7 +8,12 @@
 //global varialbes and definitions
 #define OUTPUT_THRESHOLD 6
 #define BUFF_SIZE 16
-#define TOTAL_NUMBER 1000
+
+#define SAVE_FREE(addr)\
+  if(NULL != addr){\
+    free(addr);\
+    addr = NULL;\
+  }
 
 char * usage = "Usage: mm N\n";
 char * matrix_size_error = "Invalid matrix size N = %d. It must be greater than 1.\n";
@@ -42,6 +47,9 @@ int main( int argc, char *argv[] )
   int cycleK = 0;
   int remainder = 0;
   int num_per_process = 0;
+  int range_start = 0;
+  int range_end = 0;
+
   int myrank = 0;
   int numprocesses = 0;
   int source = 0;
@@ -63,10 +71,6 @@ int main( int argc, char *argv[] )
 
   // Get num of processes
   MPI_Comm_size(MPI_COMM_WORLD, &numprocesses);
- 
-  // Get how many numbers should be processed per process
-  num_per_process = TOTAL_NUMBER / numprocesses;
-  remainder = TOTAL_NUMBER % numprocesses;
 
   // get the matrix from the command line options list
   matrixSize = atoi(argv[1]);
@@ -74,21 +78,40 @@ int main( int argc, char *argv[] )
     printf(matrix_size_error, matrixSize);
     exit(-1);
   }
-  printf(matrix_size_info, matrixSize);
+  
+  // Make sure the data is evenly distributed between the processes
+  num_per_process = matrixSize / numprocesses;
+  remainder = matrixSize % numprocesses;
+  if(0 == remainder){
+    range_start = myrank * num_per_process;
+  }else{
+    range_start = myrank * (num_per_process + 1);
+    range_start = (myrank > remainder) ? range_start - 1 : range_start;
+  }
+  range_end = (myrank > remainder - 1) ? range_start + num_per_process
+    : range_start + num_per_process + 1;
 
-  if(NULL == (matrixA = malloc( matrixSize * matrixSize * sizeof(double)))){
-    puts(malloc_error);
-    exit(-1);
+  //printf("Rank: %d\t Start: %d\t End: %d\n", myrank, range_start, range_end);
+  //fflush(stdout);
+  //usleep(1000);
+  //exit(0);
+
+  if(0 == myrank){
+    printf(matrix_size_info, matrixSize);
+    matrixA = malloc( matrixSize * (num_per_process + remainder) * sizeof(double));
+    matrixB = malloc( matrixSize * (num_per_process + remainder) * sizeof(double));
+    matrixC = malloc( matrixSize * (num_per_process + remainder) * sizeof(double));
+  }else{
+    matrixA = malloc( matrixSize * num_per_process * sizeof(double));
+    matrixB = malloc( matrixSize * num_per_process * sizeof(double));
+    matrixC = malloc( matrixSize * num_per_process * sizeof(double));
   }
-  if(NULL == (matrixB = malloc( matrixSize * matrixSize * sizeof(double)))){
+
+  if(!(matrixA && matrixB && matrixC)){
     puts(malloc_error);
-    free(matrixA);
-    exit(-1);
-  }
-  if(NULL == (matrixC = malloc( matrixSize * matrixSize * sizeof(double)))){
-    puts(malloc_error);
-    free(matrixA);
-    free(matrixB);
+    SAVE_FREE(matrixA);
+    SAVE_FREE(matrixB);
+    SAVE_FREE(matrixC);
     exit(-1);
   }
 
@@ -136,15 +159,15 @@ int main( int argc, char *argv[] )
     print_matrix(matrixC, matrixSize);
   }
 
-  free(matrixA);
-  free(matrixB);
-  free(matrixC);
-  // Finalize MPI
-  MPI_Finalize();
-
   printf("Ti: %fs\n", Ti);
   printf("Tc: %fs\n", Tc);
   printf("Tt: %fs\n", Tt);
+
+  SAVE_FREE(matrixA);
+  SAVE_FREE(matrixB);
+  SAVE_FREE(matrixC);
+  // Finalize MPI
+  MPI_Finalize();
   return 0;
 }
 
