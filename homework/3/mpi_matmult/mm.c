@@ -3,14 +3,20 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <mpi.h>
 
 //global varialbes and definitions
 #define OUTPUT_THRESHOLD 6
+#define BUFF_SIZE 16
+#define TOTAL_NUMBER 1000
 
 char * usage = "Usage: mm N\n";
 char * matrix_size_error = "Invalid matrix size N = %d. It must be greater than 1.\n";
 char * matrix_size_info = "Matrix Size N = %d\n";
 char * malloc_error = "Malloc ERROR.\n";
+
+char * msg = "Hi";
+char * msg_template = "Process number %d writes number %d\n";
 
 void print_matrix(double * matrix, int matrixSize);
 
@@ -34,11 +40,33 @@ int main( int argc, char *argv[] )
   int cycleI = 0;
   int cycleJ = 0;
   int cycleK = 0;
+  int remainder = 0;
+  int num_per_process = 0;
+  int myrank = 0;
+  int numprocesses = 0;
+  int source = 0;
+  int dest = 0;
+  MPI_Status status;
+  
+  char buffer[BUFF_SIZE];
 
   if(argc < 2){
     puts(usage);
     exit(-1);
   }
+  
+  // Init MPI
+  MPI_Init( &argc, &argv );
+                
+  // Get num processes
+  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+
+  // Get num of processes
+  MPI_Comm_size(MPI_COMM_WORLD, &numprocesses);
+ 
+  // Get how many numbers should be processed per process
+  num_per_process = TOTAL_NUMBER / numprocesses;
+  remainder = TOTAL_NUMBER % numprocesses;
 
   // get the matrix from the command line options list
   matrixSize = atoi(argv[1]);
@@ -73,9 +101,6 @@ int main( int argc, char *argv[] )
   for(cycleI = 0; cycleI < matrixSize * matrixSize; ++ cycleI){
     matrixA[cycleI] = (double)rand() / ((double)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
     matrixB[cycleI] = (double)rand() / ((double)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
-    //matrixC[cycleI] = (double)rand() / ((double)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
-    //matrixA[cycleI] = 0.5;
-    //matrixB[cycleI] = 1.0;
   }
   gettimeofday(&__end, NULL);
   t_end = (__end.tv_sec + (__end.tv_usec/1000000.0));
@@ -114,6 +139,8 @@ int main( int argc, char *argv[] )
   free(matrixA);
   free(matrixB);
   free(matrixC);
+  // Finalize MPI
+  MPI_Finalize();
 
   printf("Ti: %fs\n", Ti);
   printf("Tc: %fs\n", Tc);

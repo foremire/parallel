@@ -1,6 +1,6 @@
 PROJECT = mm
 OBJS = $(PROJECT).o
-CC = mpicc
+CC = cc
 CFLAGS = -c -g
 OUTPUT = results_serial_mm.txt
 RUN = ./$(PROJECT) 5
@@ -14,7 +14,7 @@ $(PROJECT).o : $(PROJECT).c
 all : $(PROJECT)
 
 run : all
-	$(RUN) $(PROJECT) | tee $(OUTPUT)
+	$(RUN) | tee $(OUTPUT)
 
 clean :
 	rm -f *.o
