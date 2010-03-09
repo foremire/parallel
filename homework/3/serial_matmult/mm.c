@@ -60,14 +60,26 @@ int main( int argc, char *argv[] )
   gettimeofday(&tv, NULL);
   srand(tv.tv_sec * tv.tv_usec);
 
-  // initilize the matrix by random numbers between -1.00 and 1.00
+  // initilize the matrix by random numbers between -1.00f and 1.00f
   for(cycleI = 0; cycleI < matrixSize * matrixSize; ++ cycleI){
     matrixA[cycleI] = (double)rand() / ((double)(RAND_MAX)+ 1.00f) * 2.0f - 1.0f;
     matrixB[cycleI] = (double)rand() / ((double)(RAND_MAX)+ 1.00f) * 2.0f - 1.0f;
-    matrixC[cycleI] = (double)rand() / ((double)(RAND_MAX)+ 1.00f) * 2.0f - 1.0f;
+    //matrixC[cycleI] = (double)rand() / ((double)(RAND_MAX)+ 1.00f) * 2.0f - 1.0f;
+    //matrixA[cycleI] = 0.5f;
+    //matrixB[cycleI] = 1.0f;
   }
 
-  // do the calculation
+  // do the matrix multiplication
+  for(cycleI = 0; cycleI < matrixSize; ++ cycleI){
+    for(cycleJ = 0; cycleJ < matrixSize; ++ cycleJ){
+      matrixC[cycleI * matrixSize + cycleJ] = 0.0f;
+      for(cycleK = 0; cycleK < matrixSize; ++ cycleK){
+        matrixC[cycleI * matrixSize + cycleJ] += 
+          matrixA[cycleI * matrixSize + cycleK] *
+          matrixB[cycleK * matrixSize + cycleJ];
+      }
+    }
+  }
   
   // if the matrix size is below the threshold, output the result
   if(matrixSize < OUTPUT_THRESHOLD){
