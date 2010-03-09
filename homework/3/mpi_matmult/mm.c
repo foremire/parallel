@@ -6,7 +6,7 @@
 #include <mpi.h>
 
 //global varialbes and definitions
-#define OUTPUT_THRESHOLD 6
+#define OUTPUT_THRESHOLD 7
 #define BUFF_SIZE 16
 #define COMM_TAG 16314
 
@@ -36,6 +36,7 @@ void init_matrix(matrix * mat, int xDim, int yDim, int start, int random);
 void matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC);
 void safe_exit(matrix ma, matrix mb, matrix mc, matrix me);
 void print_matrix(matrix * mat);
+void ring_print(matrix * mat, char * name, int myrank, int numprocesses);
 double get_duration(struct timeval __start);
 
 int main( int argc, char *argv[] )
@@ -46,6 +47,7 @@ int main( int argc, char *argv[] )
   matrix matrixB;
   matrix matrixC;
   matrix matrixExchange;
+  matrix matrixTmp;
   
   struct timeval __start;
   double Ti = 0.0f;
@@ -64,14 +66,10 @@ int main( int argc, char *argv[] )
 
   int myrank = 0;
   int numprocesses = 0;
-  int source = 0;
-  int dest = 0;
 
   MPI_Status status;
   MPI_Comm comm;
   
-  char buffer[BUFF_SIZE];
-
   if(argc < 2){
     puts(usage);
     exit(-1);
@@ -120,59 +118,60 @@ int main( int argc, char *argv[] )
     exit(0);
   }
 
-  gettimeofday(&__start, NULL);
-
   // initilize the matrices
-  init_matrix(&matrixA, matrixSize, range_len, range_start, 1);
+  gettimeofday(&__start, NULL);
+  init_matrix(&matrixA, matrixSize, range_len, 0, 1);
   init_matrix(&matrixB, range_len, matrixSize, range_start, 1);
-  init_matrix(&matrixC, matrixSize, range_len, range_start, 0);
+  init_matrix(&matrixC, matrixSize, range_len, 0, 0);
   init_matrix(&matrixExchange, matrixSize, (num_per_process + 1), 0, 0);
-
   Ti = get_duration(__start);
 
   // do the matrix multiplication
   gettimeofday(&__start, NULL);
 
-  matrix_mul(matrixA, matrixB, matrixC);
+  // hold the address of the exchange matrix
+  matrixTmp.data = matrixExchange.data;
+
+  //matrix_mul(matrixA, matrixB, matrixC);
   for(cycleI = 0; cycleI < numprocesses; ++ cycleI){
     // it's my turn, broadcast matrix B to other peers
     if(cycleI == myrank){
-      MPI_Bcast(&matrixB, sizeof(matrix), MPI_CHAR, cycleI, MPI_COMM_WORLD);
-      MPI_Bcast(matrixB.data, range_len * matrixSize, 
-          MPI_DOUBLE, cycleI, MPI_COMM_WORLD);
+      matrixExchange = matrixB;
     }else{
       //otherwise, receive matrix Exchange from other peers
-      MPI_Bcast(&matrixExchange, sizeof(matrix), MPI_CHAR, cycleI, MPI_COMM_WORLD);
-      MPI_Bcast(matrixExchange.data, range_len * matrixSize, 
-          MPI_DOUBLE, cycleI, MPI_COMM_WORLD);
-      matrix_mul(matrixA, matrixExchange, matrixC);
     }
+
+    MPI_Bcast(&matrixExchange, sizeof(matrix), MPI_CHAR, cycleI, MPI_COMM_WORLD);
+    if(cycleI == myrank){
+      matrixExchange.data = matrixB.data;
+    }else{
+      matrixExchange.data = matrixTmp.data;
+    }
+    MPI_Bcast(matrixExchange.data, range_len * matrixSize, 
+        MPI_DOUBLE, cycleI, MPI_COMM_WORLD);
+    matrix_mul(matrixA, matrixExchange, matrixC);
+    printf("cycle: %d, myrank %d\n", cycleI, myrank);
+    printf("matrixA xDim: %d, yDim: %d, start: %d\n", 
+        matrixA.xDim, matrixA.yDim, matrixA.start);
+    printf("matrixB xDim: %d, yDim: %d, start: %d\n", 
+        matrixExchange.xDim, matrixExchange.yDim, matrixExchange.start);
+    printf("MatrixA:\n");
+    print_matrix(&matrixA);
+    printf("MatrixExchange:\n");
+    print_matrix(&matrixExchange);
+    printf("MatrixC:\n");
+    print_matrix(&matrixC);
+    fflush(stdout);
+    usleep(100000);
   }
 
   Tc = get_duration(__start);
   
   // if the matrix size is below the threshold, output the result
   if(matrixSize < OUTPUT_THRESHOLD){
-    // start message relay ring from process 0
-    if(0 == myrank){
-      source = 0;
-      dest = source + 1;
-      MPI_Send(msg, strlen(msg) + 1, MPI_CHAR, dest, COMM_TAG, MPI_COMM_WORLD);
-      printf("MatrixC:\n");
-      print_matrix(&matrixC);
-    }else{
-      // or, it's a intermediate relay
-      source = myrank - 1;
-      dest = myrank + 1;
-      // receive the message from the previus process
-      MPI_Recv(buffer, BUFF_SIZE, MPI_CHAR, source, COMM_TAG, MPI_COMM_WORLD, &status);
-      print_matrix(&matrixC);
-
-      //relay the message to the next receiver
-      if(dest < numprocesses){
-        MPI_Send(msg, strlen(msg) + 1, MPI_CHAR, dest, COMM_TAG, MPI_COMM_WORLD);
-      }
-    }
+    //ring_print(&matrixA, "matrixA", myrank, numprocesses);
+    //ring_print(&matrixB, "matrixB", myrank, numprocesses);
+    ring_print(&matrixC, "matrixC", myrank, numprocesses);
   }
 
   Tt = Ti + Tc;
@@ -212,6 +211,7 @@ void init_matrix(matrix * mat, int xDim, int yDim, int start, int random){
       for(cycleJ = 0; cycleJ < mat->xDim; ++ cycleJ){
         mat->data[cycleI * mat->xDim + cycleJ] = 
           (double)rand() / ((double)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
+        mat->data[cycleI * mat->xDim + cycleJ] = cycleJ;
       }
     }
   }
@@ -227,12 +227,16 @@ void matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC){
   // with each other to conduct the following multiplication
   if(matrixA.xDim != matrixB.yDim){
     printf("matrix A and matrix B dimension does not match\n");
+    fflush(stdout);
+    usleep(1000);
     return;
   }
   dim = matrixA.xDim;
 
   if((matrixA.xDim != matrixC.xDim) || (matrixA.yDim != matrixC.yDim)){
     printf("matrix A and matrix C dimension does not match\n");
+    fflush(stdout);
+    usleep(1000);
     return;
   }
 
@@ -266,7 +270,7 @@ void print_matrix(matrix * mat){
   for(cycleI = 0; cycleI < mat->yDim; ++ cycleI){
     for(cycleJ = 0; cycleJ < mat->xDim; ++ cycleJ){
       val = mat->data[cycleI * mat->xDim + cycleJ];
-      if(val > 0.0){
+      if(val >= 0.0){
         printf("+%f\t", val);
       }else{
         printf("%f\t", val);
@@ -276,6 +280,35 @@ void print_matrix(matrix * mat){
   }
   fflush(stdout);
   usleep(1000);
+}
+
+void ring_print(matrix * mat, char * name, int myrank, int numprocesses){
+  int source = 0;
+  int dest = 0;
+  char buffer[BUFF_SIZE];
+  MPI_Status status;
+
+  // start message relay ring from process 0
+  if(0 == myrank){
+    source = 0;
+    dest = source + 1;
+    MPI_Send(msg, strlen(msg) + 1, MPI_CHAR, dest, COMM_TAG, MPI_COMM_WORLD);
+    puts(name);
+    print_matrix(mat);
+  }else{
+    // or, it's a intermediate relay
+    source = myrank - 1;
+    dest = myrank + 1;
+    // receive the message from the previus process
+    MPI_Recv(buffer, BUFF_SIZE, MPI_CHAR, source, COMM_TAG, MPI_COMM_WORLD, &status);
+    print_matrix(mat);
+
+    //relay the message to the next receiver
+    if(dest < numprocesses){
+      MPI_Send(msg, strlen(msg) + 1, MPI_CHAR, dest, COMM_TAG, MPI_COMM_WORLD);
+    }
+  }
+  usleep(100000);
 }
 
 double get_duration(struct timeval __start){
