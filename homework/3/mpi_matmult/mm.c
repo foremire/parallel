@@ -147,20 +147,27 @@ int main( int argc, char *argv[] )
     }else{
       matrixExchange.data = matrixTmp.data;
     }
-    MPI_Bcast(matrixExchange.data, range_len * matrixSize, 
+    MPI_Bcast(matrixExchange.data, (numprocesses + 1) * matrixSize, 
         MPI_DOUBLE, cycleI, MPI_COMM_WORLD);
-    matrix_mul(matrixA, matrixExchange, matrixC);
+
     printf("cycle: %d, myrank %d\n", cycleI, myrank);
     printf("matrixA xDim: %d, yDim: %d, start: %d\n", 
         matrixA.xDim, matrixA.yDim, matrixA.start);
     printf("matrixB xDim: %d, yDim: %d, start: %d\n", 
         matrixExchange.xDim, matrixExchange.yDim, matrixExchange.start);
-    printf("MatrixA:\n");
-    print_matrix(&matrixA);
-    printf("MatrixExchange:\n");
-    print_matrix(&matrixExchange);
-    printf("MatrixC:\n");
-    print_matrix(&matrixC);
+    //printf("MatrixA:\n");
+    //print_matrix(&matrixA);
+    //printf("MatrixB:\n");
+    //print_matrix(&matrixB);
+    //printf("MatrixExchange:\n");
+    //print_matrix(&matrixExchange);
+    //printf("MatrixC:\n");
+    //print_matrix(&matrixC);
+    
+    matrix_mul(matrixA, matrixExchange, matrixC);
+    //printf("After Mul, MatrixC:\n");
+    //print_matrix(&matrixC);
+
     fflush(stdout);
     usleep(100000);
   }
@@ -211,7 +218,7 @@ void init_matrix(matrix * mat, int xDim, int yDim, int start, int random){
       for(cycleJ = 0; cycleJ < mat->xDim; ++ cycleJ){
         mat->data[cycleI * mat->xDim + cycleJ] = 
           (double)rand() / ((double)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
-        mat->data[cycleI * mat->xDim + cycleJ] = cycleJ;
+        mat->data[cycleI * mat->xDim + cycleJ] = cycleJ + start;
       }
     }
   }
@@ -227,26 +234,24 @@ void matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC){
   // with each other to conduct the following multiplication
   if(matrixA.xDim != matrixB.yDim){
     printf("matrix A and matrix B dimension does not match\n");
-    fflush(stdout);
-    usleep(1000);
     return;
   }
   dim = matrixA.xDim;
 
   if((matrixA.xDim != matrixC.xDim) || (matrixA.yDim != matrixC.yDim)){
     printf("matrix A and matrix C dimension does not match\n");
-    fflush(stdout);
-    usleep(1000);
     return;
   }
 
   for(cycleI = 0; cycleI < matrixA.yDim; ++ cycleI){
     for(cycleJ = 0; cycleJ < matrixB.xDim; ++ cycleJ){
-      matrixC.data[cycleI * dim + cycleJ + matrixC.start] = 0.0;
+      
+      matrixC.data[cycleI * dim + cycleJ + matrixB.start] = 0.0;
+
       for(cycleK = 0; cycleK < dim; ++ cycleK){
-        matrixC.data[cycleI * dim + cycleJ + matrixC.start] += 
-          matrixA.data[cycleI * dim + cycleK] *
-          matrixB.data[cycleJ * dim + cycleK];
+        matrixC.data[cycleI * dim + cycleJ + matrixB.start] += 
+          matrixA.data[cycleI * matrixA.xDim + cycleK] *
+          matrixB.data[cycleJ + cycleK * matrixB.xDim];
       }
     }
   }
