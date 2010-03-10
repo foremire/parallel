@@ -102,13 +102,14 @@ int main( int argc, char *argv[] )
     range_start = myrank * num_per_process;
   }else{
     range_start = myrank * (num_per_process + 1);
-    range_start = (myrank > remainder) ? range_start - 1 : range_start;
+    range_start = (myrank > remainder) ? range_start - myrank + remainder : range_start;
   }
   range_end = (myrank > remainder - 1) ? range_start + num_per_process
     : range_start + num_per_process + 1;
   range_len = range_end - range_start;
 
-  //printf("Rank: %d\t Start: %d\t End: %d\n", myrank, range_start, range_end);
+  printf("Rank: %d\t Start: %d\t End: %d\n", myrank, range_start, range_end);
+  //MPI_Finalize();
   //exit(0);
 
   // These is no task for the current process, exit gracefully
@@ -123,7 +124,7 @@ int main( int argc, char *argv[] )
   init_matrix(&matrixA, matrixSize, range_len, 0, 1);
   init_matrix(&matrixB, range_len, matrixSize, range_start, 1);
   init_matrix(&matrixC, matrixSize, range_len, 0, 0);
-  init_matrix(&matrixExchange, matrixSize, (num_per_process + 1), 0, 0);
+  init_matrix(&matrixExchange, (num_per_process + 1), matrixSize, 0, 0);
   Ti = get_duration(__start);
 
   // do the matrix multiplication
@@ -147,7 +148,7 @@ int main( int argc, char *argv[] )
     }else{
       matrixExchange.data = matrixTmp.data;
     }
-    MPI_Bcast(matrixExchange.data, (numprocesses + 1) * matrixSize, 
+    MPI_Bcast(matrixExchange.data, matrixExchange.xDim * matrixSize, 
         MPI_DOUBLE, cycleI, MPI_COMM_WORLD);
 
     printf("cycle: %d, myrank %d\n", cycleI, myrank);
@@ -164,7 +165,8 @@ int main( int argc, char *argv[] )
     //printf("MatrixC:\n");
     //print_matrix(&matrixC);
     
-    matrix_mul(matrixA, matrixExchange, matrixC);
+    //matrix_mul(matrixA, matrixExchange, matrixC);
+
     //printf("After Mul, MatrixC:\n");
     //print_matrix(&matrixC);
 
@@ -172,6 +174,7 @@ int main( int argc, char *argv[] )
     usleep(100000);
   }
 
+  matrixExchange.data = matrixTmp.data;
   Tc = get_duration(__start);
   
   // if the matrix size is below the threshold, output the result
