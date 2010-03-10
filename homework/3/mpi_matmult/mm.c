@@ -114,9 +114,9 @@ int main( int argc, char *argv[] )
 
   // These is no task for the current process, exit gracefully
   if(0 == range_len){
-    printf(msg_no_task, myrank);
-    MPI_Finalize();
-    exit(0);
+    //printf(msg_no_task, myrank);
+    //MPI_Finalize();
+    //exit(0);
   }
 
   // initilize the matrices
@@ -165,7 +165,7 @@ int main( int argc, char *argv[] )
     //printf("MatrixC:\n");
     //print_matrix(&matrixC);
     
-    //matrix_mul(matrixA, matrixExchange, matrixC);
+    matrix_mul(matrixA, matrixExchange, matrixC);
 
     //printf("After Mul, MatrixC:\n");
     //print_matrix(&matrixC);
