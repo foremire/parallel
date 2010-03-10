@@ -10,7 +10,14 @@
 #define BUFF_SIZE 16
 #define COMM_TAG 16314
 
-#define SAVE_FREE(addr)\
+#define COMM_TAG_A 18000
+#define COMM_TAG_A_2 18001
+#define COMM_TAG_B 18002
+#define COMM_TAG_B_2 18003
+#define COMM_TAG_C 18004
+#define COMM_TAG_C_2 18005
+
+#define SAFE_FREE(addr)\
   if(NULL != addr){\
     free(addr);\
     addr = NULL;\
@@ -38,6 +45,8 @@ void safe_exit(matrix ma, matrix mb, matrix mc, matrix me);
 void print_matrix(matrix * mat);
 void ring_print(matrix * mat, char * name, int myrank, int numprocesses);
 double get_duration(struct timeval __start);
+void validate_result(matrix * matrixA, matrix * matrixB, matrix * matrixC, 
+    int myrank, int numprocesses, int matrixSize);
 
 int main( int argc, char *argv[] )
 {
@@ -48,15 +57,13 @@ int main( int argc, char *argv[] )
   matrix matrixC;
   matrix matrixExchange;
   matrix matrixTmp;
-  
+
   struct timeval __start;
   double Ti = 0.0f;
   double Tc = 0.0f;
   double Tt = 0.0f;
 
   int cycleI = 0;
-  int cycleJ = 0;
-  int cycleK = 0;
 
   int remainder = 0;
   int num_per_process = 0;
@@ -67,9 +74,6 @@ int main( int argc, char *argv[] )
   int myrank = 0;
   int numprocesses = 0;
 
-  MPI_Status status;
-  MPI_Comm comm;
-  
   if(argc < 2){
     puts(usage);
     exit(-1);
@@ -108,16 +112,12 @@ int main( int argc, char *argv[] )
     : range_start + num_per_process + 1;
   range_len = range_end - range_start;
 
-  printf("Rank: %d\t Start: %d\t End: %d\n", myrank, range_start, range_end);
+  //printf("Rank: %d\t Start: %d\t End: %d\n", myrank, range_start, range_end);
   //MPI_Finalize();
   //exit(0);
 
   // These is no task for the current process, exit gracefully
-  if(0 == range_len){
-    //printf(msg_no_task, myrank);
-    //MPI_Finalize();
-    //exit(0);
-  }
+  //if(0 == range_len){}
 
   // initilize the matrices
   gettimeofday(&__start, NULL);
@@ -127,20 +127,18 @@ int main( int argc, char *argv[] )
   init_matrix(&matrixExchange, (num_per_process + 1), matrixSize, 0, 0);
   Ti = get_duration(__start);
 
-  // do the matrix multiplication
-  gettimeofday(&__start, NULL);
-
   // hold the address of the exchange matrix
   matrixTmp.data = matrixExchange.data;
-
+ 
+  // do the matrix multiplication
+  gettimeofday(&__start, NULL);
   //matrix_mul(matrixA, matrixB, matrixC);
   for(cycleI = 0; cycleI < numprocesses; ++ cycleI){
     // it's my turn, broadcast matrix B to other peers
     if(cycleI == myrank){
       matrixExchange = matrixB;
-    }else{
-      //otherwise, receive matrix Exchange from other peers
     }
+    //otherwise, receive matrix Exchange from other peers
 
     MPI_Bcast(&matrixExchange, sizeof(matrix), MPI_CHAR, cycleI, MPI_COMM_WORLD);
     if(cycleI == myrank){
@@ -150,28 +148,25 @@ int main( int argc, char *argv[] )
     }
     MPI_Bcast(matrixExchange.data, matrixExchange.xDim * matrixSize, 
         MPI_DOUBLE, cycleI, MPI_COMM_WORLD);
+    matrix_mul(matrixA, matrixExchange, matrixC);
 
+    /*
     printf("cycle: %d, myrank %d\n", cycleI, myrank);
     printf("matrixA xDim: %d, yDim: %d, start: %d\n", 
         matrixA.xDim, matrixA.yDim, matrixA.start);
     printf("matrixB xDim: %d, yDim: %d, start: %d\n", 
         matrixExchange.xDim, matrixExchange.yDim, matrixExchange.start);
-    //printf("MatrixA:\n");
-    //print_matrix(&matrixA);
-    //printf("MatrixB:\n");
-    //print_matrix(&matrixB);
-    //printf("MatrixExchange:\n");
-    //print_matrix(&matrixExchange);
-    //printf("MatrixC:\n");
-    //print_matrix(&matrixC);
-    
-    matrix_mul(matrixA, matrixExchange, matrixC);
-
-    //printf("After Mul, MatrixC:\n");
-    //print_matrix(&matrixC);
-
+    printf("MatrixA:\n");
+    print_matrix(&matrixA);
+    printf("MatrixB:\n");
+    print_matrix(&matrixB);
+    printf("MatrixExchange:\n");
+    print_matrix(&matrixExchange);
+    printf("After Mul, MatrixC:\n");
+    print_matrix(&matrixC);
     fflush(stdout);
     usleep(100000);
+    */
   }
 
   matrixExchange.data = matrixTmp.data;
@@ -183,6 +178,11 @@ int main( int argc, char *argv[] )
     //ring_print(&matrixB, "matrixB", myrank, numprocesses);
     ring_print(&matrixC, "matrixC", myrank, numprocesses);
   }
+
+  matrixA.start = range_start;
+  matrixC.start = range_start;
+  validate_result(&matrixA, &matrixB, &matrixC, 
+    myrank, numprocesses, matrixSize);
 
   Tt = Ti + Tc;
   //printf("Ti: %fs\n", Ti);
@@ -227,6 +227,47 @@ void init_matrix(matrix * mat, int xDim, int yDim, int start, int random){
   }
 }
 
+void matrix_combine(matrix * sub, matrix * ref, int horizon){
+  int cycleI = 0;
+  int cycleJ = 0;
+  int start = 0;
+
+  start = ref->start;
+  if(horizon){
+    if(sub->xDim != ref->xDim){
+      printf("matrix sub and matrix ref's dimension do not match\n");
+      return;
+    }
+    if(sub->yDim + ref->start > ref->yDim){
+      printf("matrix ref is full and can not combine with sub matrix\n");
+      return;
+    }
+    for(cycleI = 0; cycleI < sub->yDim; ++ cycleI){
+      for(cycleJ = 0; cycleJ < sub->xDim; ++ cycleJ){
+        ref->data[(start + cycleI) * ref->xDim + cycleJ] = 
+          sub->data[cycleI * sub->xDim + cycleJ];
+      }
+    }
+    ref->start += sub->yDim;
+  }else{
+    if(sub->yDim != ref->yDim){
+      printf("matrix sub and matrix ref's dimension do not match\n");
+      return;
+    }
+    if(sub->xDim + ref->start > ref->xDim){
+      printf("matrix ref is full and can not combine with sub matrix\n");
+      return;
+    }
+    for(cycleI = 0; cycleI < sub->yDim; ++ cycleI){
+      for(cycleJ = 0; cycleJ < sub->xDim; ++ cycleJ){
+        ref->data[cycleI * ref->xDim + cycleJ + start] = 
+          sub->data[cycleI * sub->xDim + cycleJ + start];
+      }
+    }
+    ref->start += sub->xDim;
+  }
+}
+
 void matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC){
   int cycleI = 0;
   int cycleJ = 0;
@@ -236,13 +277,13 @@ void matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC){
   // check whether the dimension of the three matrices match 
   // with each other to conduct the following multiplication
   if(matrixA.xDim != matrixB.yDim){
-    printf("matrix A and matrix B dimension does not match\n");
+    printf("matrix A and matrix B's dimension do not match\n");
     return;
   }
   dim = matrixA.xDim;
 
   if((matrixA.xDim != matrixC.xDim) || (matrixA.yDim != matrixC.yDim)){
-    printf("matrix A and matrix C dimension does not match\n");
+    printf("matrix A and matrix C's dimension do not match\n");
     return;
   }
 
@@ -261,10 +302,10 @@ void matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC){
 }
 
 void safe_exit(matrix ma, matrix mb, matrix mc, matrix me){
-  SAVE_FREE(ma.data);
-  SAVE_FREE(mb.data);
-  SAVE_FREE(mc.data);
-  SAVE_FREE(me.data);
+  SAFE_FREE(ma.data);
+  SAFE_FREE(mb.data);
+  SAFE_FREE(mc.data);
+  SAFE_FREE(me.data);
 
   // Finalize MPI
   MPI_Finalize();
@@ -332,4 +373,87 @@ double get_duration(struct timeval __start){
   duration= t_end - t_start;
 
   return duration;
+}
+
+void validate_result(matrix * matrixA, matrix * matrixB, matrix * matrixC, 
+    int myrank, int numprocesses, int matrixSize){
+
+  MPI_Status status;
+  int cycleI = 0;
+  
+  matrix matrixARef;
+  matrix matrixBRef;
+  matrix matrixCRef;
+  matrix matrixCSerial;
+  matrix matrixExchange;
+  matrix matrixTmp;
+  
+  if(0 == myrank){
+    // intialize reference matrix on process #0
+    init_matrix(&matrixARef, matrixSize, matrixSize, 0, 0);
+    init_matrix(&matrixBRef, matrixSize, matrixSize, 0, 0);
+    init_matrix(&matrixCRef, matrixSize, matrixSize, 0, 0);
+    init_matrix(&matrixCSerial, matrixSize, matrixSize, 0, 0);
+    init_matrix(&matrixExchange, matrixSize, matrixSize, 0, 0);
+  }else{
+    matrixARef.data = NULL;
+    matrixBRef.data = NULL;
+    matrixCRef.data = NULL;
+    matrixCSerial.data = NULL;
+    matrixExchange.data = NULL;
+    matrixTmp.data = NULL;
+  }
+
+  if(0 == myrank){
+    matrixTmp = matrixExchange;
+
+    matrix_combine(matrixA, &matrixARef, 1);
+    matrix_combine(matrixB, &matrixBRef, 0);
+    matrix_combine(matrixC, &matrixCRef, 1);
+
+    // collect data from other peers
+    for(cycleI = 1; cycleI < numprocesses; ++ cycleI){
+
+      MPI_Recv(&matrixExchange, sizeof(matrix), MPI_CHAR, cycleI, 
+          COMM_TAG_A, MPI_COMM_WORLD, &status);
+      matrixExchange.data = matrixTmp.data;
+      MPI_Recv(matrixExchange.data,  matrixSize * matrixSize, 
+          MPI_DOUBLE, cycleI,  COMM_TAG_A_2, MPI_COMM_WORLD, &status);
+      matrix_combine(&matrixExchange, &matrixARef, 1);
+
+      MPI_Recv(&matrixExchange, sizeof(matrix), MPI_CHAR, cycleI, 
+          COMM_TAG_B, MPI_COMM_WORLD, &status);
+      matrixExchange.data = matrixTmp.data;
+      MPI_Recv(matrixExchange.data, matrixSize * matrixSize, 
+          MPI_DOUBLE, cycleI,  COMM_TAG_B_2, MPI_COMM_WORLD, &status);
+      matrix_combine(&matrixExchange, &matrixBRef, 0);
+
+      MPI_Recv(&matrixExchange, sizeof(matrix), MPI_CHAR, cycleI, 
+          COMM_TAG_C, MPI_COMM_WORLD, &status);
+      matrixExchange.data = matrixTmp.data;
+      MPI_Recv(matrixExchange.data,  matrixSize * matrixSize, 
+          MPI_DOUBLE, cycleI,  COMM_TAG_C_2, MPI_COMM_WORLD, &status);
+      matrix_combine(&matrixExchange, &matrixCRef, 1);
+
+    }
+  }else{
+    // send the data to process #0
+    MPI_Send(&matrixA, sizeof(matrix), MPI_CHAR, 0, COMM_TAG_A, MPI_COMM_WORLD);
+    MPI_Send(matrixA->data, matrixA->xDim * matrixA->yDim, 
+        MPI_DOUBLE, 0, COMM_TAG_A_2, MPI_COMM_WORLD);
+    
+    MPI_Send(&matrixB, sizeof(matrix), MPI_CHAR, 0, COMM_TAG_B, MPI_COMM_WORLD);
+    MPI_Send(matrixB->data, matrixB->xDim * matrixB->yDim, 
+        MPI_DOUBLE, 0, COMM_TAG_B_2, MPI_COMM_WORLD);
+   
+    MPI_Send(&matrixC, sizeof(matrix), MPI_CHAR, 0, COMM_TAG_A, MPI_COMM_WORLD);
+    MPI_Send(matrixC->data, matrixC->xDim * matrixC->yDim, 
+        MPI_DOUBLE, 0, COMM_TAG_C_2, MPI_COMM_WORLD);
+  }
+
+  SAFE_FREE(matrixARef.data);
+  SAFE_FREE(matrixBRef.data);
+  SAFE_FREE(matrixCRef.data);
+  SAFE_FREE(matrixCSerial.data);
+  SAFE_FREE(matrixTmp.data);
 }
