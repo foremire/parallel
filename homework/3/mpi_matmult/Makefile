@@ -3,7 +3,7 @@ OBJS = $(PROJECT).o
 CC = mpicc
 CFLAGS = -c -g
 OUTPUT = results_serial_mm.txt
-RUN = mpirun -np 7 ./$(PROJECT) 45
+RUN = mpirun -np 4 ./$(PROJECT) 4
 
 $(PROJECT) : $(OBJS)
 	$(CC) $(OBJS) -o $(PROJECT)
