@@ -425,6 +425,7 @@ void validate_result(matrix * matrixA, matrix * matrixB, matrix * matrixC,
     matrix_combine(matrixC, &matrixCRef, 1);
 
     // collect data from other peers
+    printf("Collecting the result...\n");
     for(cycleI = 1; cycleI < numprocesses; ++ cycleI){
 
       MPI_Send(msg, strlen(msg) + 1, MPI_CHAR, cycleI, COMM_TAG, MPI_COMM_WORLD);
@@ -436,9 +437,9 @@ void validate_result(matrix * matrixA, matrix * matrixB, matrix * matrixC,
           MPI_DOUBLE, cycleI,  COMM_TAG_A_2, MPI_COMM_WORLD, &status);
       matrix_combine(&matrixExchange, &matrixARef, 1);
 
-      printf("Recv A %d\n", cycleI);
-      fflush(stdout);
-      usleep(100000);
+      //printf("Recv A %d\n", cycleI);
+      //fflush(stdout);
+      //usleep(100000);
 
       MPI_Recv(&matrixExchange, sizeof(matrix), MPI_CHAR, cycleI, 
           COMM_TAG_B, MPI_COMM_WORLD, &status);
@@ -447,10 +448,10 @@ void validate_result(matrix * matrixA, matrix * matrixB, matrix * matrixC,
           MPI_DOUBLE, cycleI,  COMM_TAG_B_2, MPI_COMM_WORLD, &status);
       matrix_combine(&matrixExchange, &matrixBRef, 0);
       
-      printf("Recv B %d\n", cycleI);
+      //printf("Recv B %d\n", cycleI);
       //print_matrix(&matrixExchange);
-      fflush(stdout);
-      usleep(100000);
+      //fflush(stdout);
+      //usleep(100000);
 
       MPI_Recv(&matrixExchange, sizeof(matrix), MPI_CHAR, cycleI, 
           COMM_TAG_C, MPI_COMM_WORLD, &status);
@@ -459,9 +460,9 @@ void validate_result(matrix * matrixA, matrix * matrixB, matrix * matrixC,
           MPI_DOUBLE, cycleI,  COMM_TAG_C_2, MPI_COMM_WORLD, &status);
       matrix_combine(&matrixExchange, &matrixCRef, 1);
 
-      printf("Recv C %d\n", cycleI);
-      fflush(stdout);
-      usleep(100000);
+      //printf("Recv C %d\n", cycleI);
+      //fflush(stdout);
+      //usleep(100000);
     }
   }else{
     // receive the message from the previus process
@@ -472,32 +473,32 @@ void validate_result(matrix * matrixA, matrix * matrixB, matrix * matrixC,
     MPI_Send(matrixA->data, matrixA->xDim * matrixA->yDim, 
         MPI_DOUBLE, 0, COMM_TAG_A_2, MPI_COMM_WORLD);
       
-    printf("Sent A %d\n", myrank);
-    printf("xDim: %d, yDim: %d, start: %d\n\n", 
-        matrixA->xDim, matrixA->yDim, matrixA->start);
-    fflush(stdout);
-    usleep(100000);
+    //printf("Sent A %d\n", myrank);
+    //printf("xDim: %d, yDim: %d, start: %d\n\n", 
+    //    matrixA->xDim, matrixA->yDim, matrixA->start);
+    //fflush(stdout);
+    //usleep(100000);
     
     MPI_Send(matrixB, sizeof(matrix), MPI_CHAR, 0, COMM_TAG_B, MPI_COMM_WORLD);
     MPI_Send(matrixB->data, matrixB->xDim * matrixB->yDim, 
         MPI_DOUBLE, 0, COMM_TAG_B_2, MPI_COMM_WORLD);
     
-    printf("Sent B %d\n", myrank);
-    printf("xDim: %d, yDim: %d, start: %d\n\n", 
-        matrixB->xDim, matrixB->yDim, matrixB->start);
+    //printf("Sent B %d\n", myrank);
+    //printf("xDim: %d, yDim: %d, start: %d\n\n", 
+    //    matrixB->xDim, matrixB->yDim, matrixB->start);
     //print_matrix(matrixB);
-    fflush(stdout);
-    usleep(100000);
+    //fflush(stdout);
+    //usleep(100000);
    
     MPI_Send(matrixC, sizeof(matrix), MPI_CHAR, 0, COMM_TAG_C, MPI_COMM_WORLD);
     MPI_Send(matrixC->data, matrixC->xDim * matrixC->yDim, 
         MPI_DOUBLE, 0, COMM_TAG_C_2, MPI_COMM_WORLD);
     
-    printf("Sent C %d\n", myrank);
-    printf("xDim: %d, yDim: %d, start: %d\n\n", 
-        matrixC->xDim, matrixC->yDim, matrixC->start);
-    fflush(stdout);
-    usleep(100000);
+    //printf("Sent C %d\n", myrank);
+    //printf("xDim: %d, yDim: %d, start: %d\n\n", 
+    //    matrixC->xDim, matrixC->yDim, matrixC->start);
+    //fflush(stdout);
+    //usleep(100000);
     
     //relay the message to the next receiver
     if(myrank + 1< numprocesses){
@@ -543,8 +544,6 @@ void validate_result(matrix * matrixA, matrix * matrixB, matrix * matrixC,
 
     printf("\n====\nValidation Result: %d match(es), %d diff(s)\n\n", match, diff);
   }
-
-
 
   SAFE_FREE(matrixARef.data);
   SAFE_FREE(matrixBRef.data);
