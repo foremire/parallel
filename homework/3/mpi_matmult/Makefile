@@ -1,9 +1,9 @@
 PROJECT = mm
 OBJS = $(PROJECT).o
-CC = cc
+CC = mpicc
 CFLAGS = -c -g
 OUTPUT = results_serial_mm.txt
-RUN = ./$(PROJECT) 5
+RUN = mpirun -np 7 ./$(PROJECT) 45
 
 $(PROJECT) : $(OBJS)
 	$(CC) $(OBJS) -o $(PROJECT)
