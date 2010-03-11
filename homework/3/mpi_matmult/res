@@ -1,0 +1,513 @@
+
+np: 2
+matrix size: 360
+Matrix Size N = 360
+Ti: 0.003527s
+Tc: 0.049524s
+Tt: 0.053051s
+matrix size: 421
+Matrix Size N = 421
+Ti: 0.004908s
+Tc: 0.079621s
+Tt: 0.084529s
+matrix size: 514
+Matrix Size N = 514
+Ti: 0.008491s
+Tc: 0.170152s
+Tt: 0.178643s
+matrix size: 609
+Matrix Size N = 609
+Ti: 0.011284s
+Tc: 0.482918s
+Tt: 0.494202s
+matrix size: 737
+Matrix Size N = 737
+Ti: 0.018141s
+Tc: 1.084584s
+Tt: 1.102725s
+matrix size: 920
+Matrix Size N = 920
+Ti: 0.028092s
+Tc: 2.368429s
+Tt: 2.396521s
+matrix size: 1160
+Matrix Size N = 1160
+Ti: 0.044566s
+Tc: 5.500416s
+Tt: 5.544982s
+matrix size: 1420
+Matrix Size N = 1420
+Ti: 0.064766s
+Tc: 11.381897s
+Tt: 11.446663s
+matrix size: 1770
+Matrix Size N = 1770
+Ti: 0.094519s
+Tc: 28.501823s
+Tt: 28.596342s
+matrix size: 2210
+Matrix Size N = 2210
+Ti: 0.145073s
+Tc: 57.119795s
+Tt: 57.264868s
+matrix size: 2850
+Matrix Size N = 2850
+Ti: 0.229720s
+Tc: 124.292769s
+Tt: 124.522489s
+
+np: 3
+matrix size: 360
+Matrix Size N = 360
+Ti: 0.002383s
+Tc: 0.049717s
+Tt: 0.052100s
+matrix size: 421
+Matrix Size N = 421
+Ti: 0.003285s
+Tc: 0.071520s
+Tt: 0.074805s
+matrix size: 514
+Matrix Size N = 514
+Ti: 0.004865s
+Tc: 0.128354s
+Tt: 0.133219s
+matrix size: 609
+Matrix Size N = 609
+Ti: 0.006864s
+Tc: 0.284679s
+Tt: 0.291543s
+matrix size: 737
+Matrix Size N = 737
+Ti: 0.010110s
+Tc: 0.593252s
+Tt: 0.603362s
+matrix size: 920
+Matrix Size N = 920
+Ti: 0.020668s
+Tc: 1.634453s
+Tt: 1.655121s
+matrix size: 1160
+Matrix Size N = 1160
+Ti: 0.031158s
+Tc: 3.915288s
+Tt: 3.946446s
+matrix size: 1420
+Matrix Size N = 1420
+Ti: 0.045431s
+Tc: 7.767800s
+Tt: 7.813231s
+matrix size: 1770
+Matrix Size N = 1770
+Ti: 0.063528s
+Tc: 14.526123s
+Tt: 14.589651s
+matrix size: 2210
+Matrix Size N = 2210
+Ti: 0.095139s
+Tc: 33.282101s
+Tt: 33.377240s
+matrix size: 2850
+Matrix Size N = 2850
+Ti: 0.158039s
+Tc: 63.708129s
+Tt: 63.866168s
+
+np: 4
+matrix size: 360
+Matrix Size N = 360
+Ti: 0.001812s
+Tc: 0.045086s
+Tt: 0.046898s
+matrix size: 421
+Matrix Size N = 421
+Ti: 0.002480s
+Tc: 0.066680s
+Tt: 0.069160s
+matrix size: 514
+Matrix Size N = 514
+Ti: 0.003615s
+Tc: 0.130658s
+Tt: 0.134273s
+matrix size: 609
+Matrix Size N = 609
+Ti: 0.005126s
+Tc: 0.232935s
+Tt: 0.238061s
+matrix size: 737
+Matrix Size N = 737
+Ti: 0.007868s
+Tc: 0.405544s
+Tt: 0.413412s
+matrix size: 920
+Matrix Size N = 920
+Ti: 0.011856s
+Tc: 0.951056s
+Tt: 0.962912s
+matrix size: 1160
+Matrix Size N = 1160
+Ti: 0.022763s
+Tc: 2.246956s
+Tt: 2.269719s
+matrix size: 1420
+Matrix Size N = 1420
+Ti: 0.042648s
+Tc: 5.595456s
+Tt: 5.638104s
+matrix size: 1770
+Matrix Size N = 1770
+Ti: 0.052223s
+Tc: 11.298062s
+Tt: 11.350285s
+matrix size: 2210
+Matrix Size N = 2210
+Ti: 0.076863s
+Tc: 22.747710s
+Tt: 22.824573s
+matrix size: 2850
+Matrix Size N = 2850
+Ti: 0.121551s
+Tc: 50.883941s
+Tt: 51.005492s
+
+np: 5
+matrix size: 360
+Matrix Size N = 360
+Ti: 0.001435s
+Tc: 0.056859s
+Tt: 0.058294s
+matrix size: 421
+Matrix Size N = 421
+Ti: 0.002162s
+Tc: 0.074023s
+Tt: 0.076185s
+matrix size: 514
+Matrix Size N = 514
+Ti: 0.002913s
+Tc: 0.121070s
+Tt: 0.123983s
+matrix size: 609
+Matrix Size N = 609
+Ti: 0.004076s
+Tc: 0.221620s
+Tt: 0.225696s
+matrix size: 737
+Matrix Size N = 737
+Ti: 0.006047s
+Tc: 0.374389s
+Tt: 0.380436s
+matrix size: 920
+Matrix Size N = 920
+Ti: 0.010773s
+Tc: 0.761578s
+Tt: 0.772351s
+matrix size: 1160
+Matrix Size N = 1160
+Ti: 0.017876s
+Tc: 1.625706s
+Tt: 1.643582s
+matrix size: 1420
+Matrix Size N = 1420
+Ti: 0.027233s
+Tc: 3.292087s
+Tt: 3.319320s
+matrix size: 1770
+Matrix Size N = 1770
+Ti: 0.041538s
+Tc: 7.418992s
+Tt: 7.460530s
+matrix size: 2210
+Matrix Size N = 2210
+Ti: 0.062270s
+Tc: 15.992114s
+Tt: 16.054384s
+matrix size: 2850
+Matrix Size N = 2850
+Ti: 0.098439s
+Tc: 36.676467s
+Tt: 36.774906s
+
+np: 6
+matrix size: 360
+Matrix Size N = 360
+Ti: 0.001200s
+Tc: 0.049701s
+Tt: 0.050901s
+matrix size: 421
+Matrix Size N = 421
+Ti: 0.001665s
+Tc: 0.068915s
+Tt: 0.070580s
+matrix size: 514
+Matrix Size N = 514
+Ti: 0.002433s
+Tc: 0.112707s
+Tt: 0.115140s
+matrix size: 609
+Matrix Size N = 609
+Ti: 0.003445s
+Tc: 0.188203s
+Tt: 0.191648s
+matrix size: 737
+Matrix Size N = 737
+Ti: 0.005029s
+Tc: 0.322361s
+Tt: 0.327390s
+matrix size: 920
+Matrix Size N = 920
+Ti: 0.007892s
+Tc: 0.619543s
+Tt: 0.627435s
+matrix size: 1160
+Matrix Size N = 1160
+Ti: 0.016629s
+Tc: 1.462801s
+Tt: 1.479430s
+matrix size: 1420
+Matrix Size N = 1420
+Ti: 0.022673s
+Tc: 3.275704s
+Tt: 3.298377s
+matrix size: 1770
+Matrix Size N = 1770
+Ti: 0.034707s
+Tc: 7.427056s
+Tt: 7.461763s
+matrix size: 2210
+Matrix Size N = 2210
+Ti: 0.052224s
+Tc: 12.524728s
+Tt: 12.576952s
+matrix size: 2850
+Matrix Size N = 2850
+Ti: 0.084978s
+Tc: 36.856050s
+Tt: 36.941028s
+
+np: 7
+matrix size: 360
+Matrix Size N = 360
+Ti: 0.001047s
+Tc: 0.084978s
+Tt: 0.086025s
+matrix size: 421
+Matrix Size N = 421
+Ti: 0.001433s
+Tc: 0.082229s
+Tt: 0.083662s
+matrix size: 514
+Matrix Size N = 514
+Ti: 0.002100s
+Tc: 0.117020s
+Tt: 0.119120s
+matrix size: 609
+Matrix Size N = 609
+Ti: 0.002952s
+Tc: 0.192309s
+Tt: 0.195261s
+matrix size: 737
+Matrix Size N = 737
+Ti: 0.004272s
+Tc: 0.296981s
+Tt: 0.301253s
+matrix size: 920
+Matrix Size N = 920
+Ti: 0.007289s
+Tc: 0.534491s
+Tt: 0.541780s
+matrix size: 1160
+Matrix Size N = 1160
+Ti: 0.010841s
+Tc: 1.207310s
+Tt: 1.218151s
+matrix size: 1420
+Matrix Size N = 1420
+Ti: 0.019208s
+Tc: 2.851751s
+Tt: 2.870959s
+matrix size: 1770
+Matrix Size N = 1770
+Ti: 0.028578s
+Tc: 6.284714s
+Tt: 6.313292s
+matrix size: 2210
+Matrix Size N = 2210
+Ti: 0.045615s
+Tc: 10.140905s
+Tt: 10.186520s
+matrix size: 2850
+Matrix Size N = 2850
+Ti: 0.071687s
+Tc: 28.905223s
+Tt: 28.976910s
+
+np: 8
+matrix size: 360
+Matrix Size N = 360
+Ti: 0.001283s
+Tc: 0.060009s
+Tt: 0.061292s
+matrix size: 421
+Matrix Size N = 421
+Ti: 0.001242s
+Tc: 0.073084s
+Tt: 0.074326s
+matrix size: 514
+Matrix Size N = 514
+Ti: 0.001883s
+Tc: 0.141967s
+Tt: 0.143850s
+matrix size: 609
+Matrix Size N = 609
+Ti: 0.002631s
+Tc: 0.203512s
+Tt: 0.206143s
+matrix size: 737
+Matrix Size N = 737
+Ti: 0.003763s
+Tc: 0.262698s
+Tt: 0.266461s
+matrix size: 920
+Matrix Size N = 920
+Ti: 0.005780s
+Tc: 0.459968s
+Tt: 0.465748s
+matrix size: 1160
+Matrix Size N = 1160
+Ti: 0.009338s
+Tc: 1.048715s
+Tt: 1.058053s
+matrix size: 1420
+Matrix Size N = 1420
+Ti: 0.014411s
+Tc: 2.140994s
+Tt: 2.155405s
+matrix size: 1770
+Matrix Size N = 1770
+Ti: 0.027475s
+Tc: 4.886085s
+Tt: 4.913560s
+matrix size: 2210
+Matrix Size N = 2210
+Ti: 0.037735s
+Tc: 8.510673s
+Tt: 8.548408s
+matrix size: 2850
+Matrix Size N = 2850
+Ti: 0.063913s
+Tc: 19.571401s
+Tt: 19.635314s
+
+np: 9
+matrix size: 360
+Matrix Size N = 360
+Ti: 0.000808s
+Tc: 0.069375s
+Tt: 0.070183s
+matrix size: 421
+Matrix Size N = 421
+Ti: 0.001110s
+Tc: 0.074282s
+Tt: 0.075392s
+matrix size: 514
+Matrix Size N = 514
+Ti: 0.001668s
+Tc: 0.119967s
+Tt: 0.121635s
+matrix size: 609
+Matrix Size N = 609
+Ti: 0.002982s
+Tc: 0.173658s
+Tt: 0.176640s
+matrix size: 737
+Matrix Size N = 737
+Ti: 0.003308s
+Tc: 0.269606s
+Tt: 0.272914s
+matrix size: 920
+Matrix Size N = 920
+Ti: 0.005202s
+Tc: 0.442085s
+Tt: 0.447287s
+matrix size: 1160
+Matrix Size N = 1160
+Ti: 0.008323s
+Tc: 0.886071s
+Tt: 0.894394s
+matrix size: 1420
+Matrix Size N = 1420
+Ti: 0.012660s
+Tc: 1.783348s
+Tt: 1.796008s
+matrix size: 1770
+Matrix Size N = 1770
+Ti: 0.023597s
+Tc: 4.273181s
+Tt: 4.296778s
+matrix size: 2210
+Matrix Size N = 2210
+Ti: 0.034438s
+Tc: 8.228367s
+Tt: 8.262805s
+matrix size: 2850
+Matrix Size N = 2850
+Ti: 0.058690s
+Tc: 19.652697s
+Tt: 19.711387s
+
+np: 10
+matrix size: 360
+Matrix Size N = 360
+Ti: 0.000720s
+Tc: 0.077257s
+Tt: 0.077977s
+matrix size: 421
+Matrix Size N = 421
+Ti: 0.001021s
+Tc: 0.071277s
+Tt: 0.072298s
+matrix size: 514
+Matrix Size N = 514
+Ti: 0.001489s
+Tc: 0.108294s
+Tt: 0.109783s
+matrix size: 609
+Matrix Size N = 609
+Ti: 0.002059s
+Tc: 0.165538s
+Tt: 0.167597s
+matrix size: 737
+Matrix Size N = 737
+Ti: 0.002990s
+Tc: 0.244484s
+Tt: 0.247474s
+matrix size: 920
+Matrix Size N = 920
+Ti: 0.004891s
+Tc: 0.412911s
+Tt: 0.417802s
+matrix size: 1160
+Matrix Size N = 1160
+Ti: 0.007515s
+Tc: 0.788015s
+Tt: 0.795530s
+matrix size: 1420
+Matrix Size N = 1420
+Ti: 0.011327s
+Tc: 1.567393s
+Tt: 1.578720s
+matrix size: 1770
+Matrix Size N = 1770
+Ti: 0.020877s
+Tc: 4.014542s
+Tt: 4.035419s
+matrix size: 2210
+Matrix Size N = 2210
+Ti: 0.034652s
+Tc: 8.605389s
+Tt: 8.640041s
+matrix size: 2850
+Matrix Size N = 2850
+Ti: 0.051800s
+Tc: 19.274151s
+Tt: 19.325951s
