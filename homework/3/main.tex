@@ -15,10 +15,12 @@ xliu@ece.udel.edu}
 \begin{description}
 \item[Requirement:] The first thing you need to do is to implement a C program 
 for Matrix Multiplication, serially, for a single processor.
-Your implementation will create and initialize 2 matrices of size N 
+
+Your implementation will create and initialize 2 matrices of size N 
 by N (that are called MatrixA and MatrixB) and multiply them (Store 
 the result in a variable called MatrixC).
-The value of N will be given to your program through the command line. 
+
+The value of N will be given to your program through the command line. 
 The value of each element of the Matrices will be random double 
 precision numbers from -1 to 1.
 
@@ -93,9 +95,11 @@ Multiply application. As before, the names for the matrices
 will be MatrixA, MatrixB and MatrixC. Also, the size of the 
 matrices remain NxN and N is a parameter passed through the 
 command line.
-The number of MPI processes to use is decided when the program 
+
+The number of MPI processes to use is decided when the program 
 is launched. For example if you run your program with:
-\begin{verbatim}mpirun Ðnp 7 mpi_matmult 5 
+\begin{verbatim}
+mpirun Ðnp 7 mpi_matmult 5 
 \end{verbatim}
 There will be 7 processors working to achieve the multiplication 
 of 5x5 matrices. As before, when N is less than 6, automatically 
@@ -172,7 +176,7 @@ the multiplication and dominate the total time cost. The more process, the more 
 and the speed up decreases as a result.
 
 \item[Q: ] Repeat e. and f. using only $T_{C}$ for calculating the speed up.
-\item[A: ] See Fig.\ref{fig: parallel_mm_2}. The result are similar with 
+\item[A: ] See Fig.\ref{fig: parallel_mm_2}. The results are similar with 
 Fig.\ref{fig: parallel_mm} in which $T_{T}$ is measured. 
 
 \begin{figure}[h!]
