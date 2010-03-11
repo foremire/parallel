@@ -203,6 +203,22 @@ speeding up that you can get using:
 		\item 10000 processors?
 		\item Infinite Processors?
 	\end{enumerate}
+	
+\item[A:] According to Amdahl’s Law, the speed up 
+\begin{equation}
+S = \frac{1}{(1-P) + \frac{P}{N}}
+\end{equation}
+in which $P$ is the parallel part and $N$ is the number of processors. In this case, 
+$P = 1 - 0.005 = 0.995$. For different values of $N$, the speed up is:
+
+	\begin{enumerate}
+		\item 2 processors, 1.9900
+		\item 10 processors, 9.5693
+		\item 1000 processors, 169.4915
+		\item 10000 processors, 200.0000
+		\item Infinite Processors, 200.0000
+	\end{enumerate}
+	
 \end{description}
 
 \end{document}
