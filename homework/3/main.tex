@@ -36,10 +36,51 @@ $T_{T}$ for your report and plot T vs N for the initialization,
 computation and total time. Fit your curves to a polynomial of 
 appropriate degree.
 
-\item[A:] 
+\item[A:] The curve is plotted in Fig.\ref{fig:serial_mm}. N, $T_{t}$, 
+$T_{i}$ and $T_{c}$ were shown in Tab.\ref{tab:ntt}.
+
+\begin{table}[t]
+	\begin{center}
+	\caption{\label{tab:ntt} N, $T_{t}$, $T_{i}$ and $T_{c}$}
+	\begin{tabular}{|r|r|r|r|r|}
+		\hline
+		$T_{t}$ & N & $T_{t} (s)$ & $T_{i} (s)$ & $T_{c} (s)$ \\ \hline
+		0.5 seconds & 360    & 0.502607    & 0.005212     & 0.497395 \\ \hline
+		1 second    & 421    & 1.013100    & 0.007261     & 1.005839 \\ \hline
+		2 seconds   & 514    & 2.097357    & 0.010981     & 2.086376 \\ \hline
+		4 seconds   & 609    & 4.083775    & 0.015564     & 4.068211 \\ \hline
+		8 seconds   & 737    & 7.995231    & 0.023209     & 7.972022 \\ \hline
+		16 seconds  & 920    & 15.953456   & 0.035903     & 15.917553 \\ \hline
+		32 seconds  & 1160   & 32.831239   & 0.057488     & 32.773751 \\ \hline
+		1 minute    & 420    & 60.495999   & 0.081975     & 60.414024 \\ \hline
+		2 minutes   & 1770   & 118.073772  & 0.125513     & 117.948259 \\ \hline
+		4 minutes   & 2210   & 231.345677  & 0.194876     & 231.150801 \\ \hline
+		8 minutes   & 2850   & 507.652142  & 0.338189     & 507.313953 \\ \hline
+	\end{tabular}
+	\end{center}
+\end{table}
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=1.0\textwidth, angle=0]{serial_mm.pdf}
+		\caption{\label{fig:serial_mm}Serial Matrix Multiplication: Matrix Size vs Time}
+	\end{center}
+\end{figure}
 
 \item[Q:] What is the equation that best fit to your data for each 
 case? Include the values of all coefficients you need.
+\item[A:] 
+\begin{equation}
+T_{i} = AN^{2} + BN + C
+\end{equation}
+
+\begin{equation}
+T_{c} = AN^{3} + BN^{2} + CN + D
+\end{equation}
+
+\begin{equation}
+T_{t} = AN^{3} + BN^{2} + CN + D
+\end{equation}
 
 \end{description}
 
