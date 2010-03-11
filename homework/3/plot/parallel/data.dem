@@ -1,0 +1,11 @@
+set term post enh
+set output "parallel_mm.eps"
+set title  "Parallel Speedup(Tt): Speedup vs Process Number"
+set xlabel "Process Number N"
+set ylabel "Speedup"
+set ytics border in scale 1,0.5 mirror norotate  offset character 0, 0, 0 
+set xrange [ 2: 12 ] noreverse nowriteback
+set yrange [ 0.0000 : 45.0000 ] noreverse nowriteback
+set lmargin 9
+set rmargin 2
+plot 'data.txt' using 1:2 title "T0.5" with lines lt 1, 'data.txt' using 1:3 title "T1" with lines lt 2, 'data.txt' using 1:4 title "T2" with lines lt 3, 'data.txt' using 1:5 title "T4" with lines lt 4, 'data.txt' using 1:6 title "T8" with lines lt 5, 'data.txt' using 1:7 title "T16" with lines lt 6, 'data.txt' using 1:8 title "T32" with lines lt 7, 'data.txt' using 1:9 title "T60" with lines lt 8, 'data.txt' using 1:10 title "T120" with lines lt 9, 'data.txt' using 1:11 title "T240" with lines lt 10, 'data.txt' using 1:12 title "T480" with lines lt 11
