@@ -172,23 +172,19 @@ int main( int argc, char *argv[] )
   matrixExchange.data = matrixTmp.data;
   Tc = get_duration(__start);
   
-  // if the matrix size is below the threshold, output the result
-  if(matrixSize < OUTPUT_THRESHOLD){
-    //ring_print(&matrixA, "matrixA", myrank, numprocesses);
-    //ring_print(&matrixB, "matrixB", myrank, numprocesses);
-    ring_print(&matrixC, "matrixC", myrank, numprocesses);
+  if(0 == myrank){
+    Tt = Ti + Tc;
+    printf("Ti: %fs\n", Ti);
+    printf("Tc: %fs\n", Tc);
+    printf("Tt: %fs\n", Tt);
+    fflush(stdout);
   }
-
+  
   matrixA.start = range_start;
   matrixB.start = range_start;
   matrixC.start = range_start;
   validate_result(&matrixA, &matrixB, &matrixC, 
     myrank, numprocesses, matrixSize);
-
-  Tt = Ti + Tc;
-  //printf("Ti: %fs\n", Ti);
-  //printf("Tc: %fs\n", Tc);
-  //printf("Tt: %fs\n", Tt);
   
   safe_exit(matrixA, matrixB, matrixC, matrixExchange);
   return 0;
@@ -394,6 +390,9 @@ void validate_result(matrix * matrixA, matrix * matrixB, matrix * matrixC,
   int diff = 0;
   int match = 0;
   
+  struct timeval __start;
+  double Tc = 0.0f;
+  
   matrix matrixARef;
   matrix matrixBRef;
   matrix matrixCRef;
@@ -437,10 +436,6 @@ void validate_result(matrix * matrixA, matrix * matrixB, matrix * matrixC,
           MPI_DOUBLE, cycleI,  COMM_TAG_A_2, MPI_COMM_WORLD, &status);
       matrix_combine(&matrixExchange, &matrixARef, 1);
 
-      //printf("Recv A %d\n", cycleI);
-      //fflush(stdout);
-      //usleep(100000);
-
       MPI_Recv(&matrixExchange, sizeof(matrix), MPI_CHAR, cycleI, 
           COMM_TAG_B, MPI_COMM_WORLD, &status);
       matrixExchange.data = matrixTmp.data;
@@ -448,11 +443,6 @@ void validate_result(matrix * matrixA, matrix * matrixB, matrix * matrixC,
           MPI_DOUBLE, cycleI,  COMM_TAG_B_2, MPI_COMM_WORLD, &status);
       matrix_combine(&matrixExchange, &matrixBRef, 0);
       
-      //printf("Recv B %d\n", cycleI);
-      //print_matrix(&matrixExchange);
-      //fflush(stdout);
-      //usleep(100000);
-
       MPI_Recv(&matrixExchange, sizeof(matrix), MPI_CHAR, cycleI, 
           COMM_TAG_C, MPI_COMM_WORLD, &status);
       matrixExchange.data = matrixTmp.data;
@@ -460,9 +450,6 @@ void validate_result(matrix * matrixA, matrix * matrixB, matrix * matrixC,
           MPI_DOUBLE, cycleI,  COMM_TAG_C_2, MPI_COMM_WORLD, &status);
       matrix_combine(&matrixExchange, &matrixCRef, 1);
 
-      //printf("Recv C %d\n", cycleI);
-      //fflush(stdout);
-      //usleep(100000);
     }
   }else{
     // receive the message from the previus process
@@ -473,32 +460,13 @@ void validate_result(matrix * matrixA, matrix * matrixB, matrix * matrixC,
     MPI_Send(matrixA->data, matrixA->xDim * matrixA->yDim, 
         MPI_DOUBLE, 0, COMM_TAG_A_2, MPI_COMM_WORLD);
       
-    //printf("Sent A %d\n", myrank);
-    //printf("xDim: %d, yDim: %d, start: %d\n\n", 
-    //    matrixA->xDim, matrixA->yDim, matrixA->start);
-    //fflush(stdout);
-    //usleep(100000);
-    
     MPI_Send(matrixB, sizeof(matrix), MPI_CHAR, 0, COMM_TAG_B, MPI_COMM_WORLD);
     MPI_Send(matrixB->data, matrixB->xDim * matrixB->yDim, 
         MPI_DOUBLE, 0, COMM_TAG_B_2, MPI_COMM_WORLD);
     
-    //printf("Sent B %d\n", myrank);
-    //printf("xDim: %d, yDim: %d, start: %d\n\n", 
-    //    matrixB->xDim, matrixB->yDim, matrixB->start);
-    //print_matrix(matrixB);
-    //fflush(stdout);
-    //usleep(100000);
-   
     MPI_Send(matrixC, sizeof(matrix), MPI_CHAR, 0, COMM_TAG_C, MPI_COMM_WORLD);
     MPI_Send(matrixC->data, matrixC->xDim * matrixC->yDim, 
         MPI_DOUBLE, 0, COMM_TAG_C_2, MPI_COMM_WORLD);
-    
-    //printf("Sent C %d\n", myrank);
-    //printf("xDim: %d, yDim: %d, start: %d\n\n", 
-    //    matrixC->xDim, matrixC->yDim, matrixC->start);
-    //fflush(stdout);
-    //usleep(100000);
     
     //relay the message to the next receiver
     if(myrank + 1< numprocesses){
@@ -507,6 +475,9 @@ void validate_result(matrix * matrixA, matrix * matrixB, matrix * matrixC,
   }
   
   if(0 == myrank){
+    printf("Do Serial Matrix Multiplication...\n");
+    fflush(stdout);
+    gettimeofday(&__start, NULL);
     // do the matrix multiplication
     for(cycleI = 0; cycleI < matrixSize; ++ cycleI){
       for(cycleJ = 0; cycleJ < matrixSize; ++ cycleJ){
@@ -518,9 +489,10 @@ void validate_result(matrix * matrixA, matrix * matrixB, matrix * matrixC,
         }
       }
     }
+    Tc = get_duration(__start);
   
     if(matrixSize < OUTPUT_THRESHOLD){
-      printf("MatrixARef:\n");
+      printf("\nMatrixARef:\n");
       print_matrix(&matrixARef);
       printf("MatrixBRef:\n");
       print_matrix(&matrixBRef);
@@ -529,6 +501,10 @@ void validate_result(matrix * matrixA, matrix * matrixB, matrix * matrixC,
       printf("MatrixCSerial:\n");
       print_matrix(&matrixCSerial);
     }
+    
+    printf("\n\nTc: %fs\n", Tc);
+    printf("Vaidating the results...\n");
+    fflush(stdout);
 
     // compare the serial result and parallel result
     for(cycleI = 0; cycleI < matrixSize; ++ cycleI){
