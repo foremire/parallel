@@ -149,24 +149,6 @@ int main( int argc, char *argv[] )
     MPI_Bcast(matrixExchange.data, matrixExchange.xDim * matrixSize, 
         MPI_DOUBLE, cycleI, MPI_COMM_WORLD);
     matrix_mul(matrixA, matrixExchange, matrixC);
-
-    /*
-    printf("cycle: %d, myrank %d\n", cycleI, myrank);
-    printf("matrixA xDim: %d, yDim: %d, start: %d\n", 
-        matrixA.xDim, matrixA.yDim, matrixA.start);
-    printf("matrixB xDim: %d, yDim: %d, start: %d\n", 
-        matrixExchange.xDim, matrixExchange.yDim, matrixExchange.start);
-    printf("MatrixA:\n");
-    print_matrix(&matrixA);
-    printf("MatrixB:\n");
-    print_matrix(&matrixB);
-    printf("MatrixExchange:\n");
-    print_matrix(&matrixExchange);
-    printf("After Mul, MatrixC:\n");
-    print_matrix(&matrixC);
-    fflush(stdout);
-    usleep(100000);
-    */
   }
 
   matrixExchange.data = matrixTmp.data;
@@ -218,8 +200,6 @@ void init_matrix(matrix * mat, int xDim, int yDim, int start, int random){
       for(cycleJ = 0; cycleJ < mat->xDim; ++ cycleJ){
         mat->data[cycleI * mat->xDim + cycleJ] = 
           (double)rand() / ((double)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
-        //mat->data[cycleI * mat->xDim + cycleJ] = cycleJ + start;
-        //mat->data[cycleI * mat->xDim + cycleJ] = 1.0;
       }
     }
   }
@@ -502,7 +482,7 @@ void validate_result(matrix * matrixA, matrix * matrixB, matrix * matrixC,
       print_matrix(&matrixCSerial);
     }
     
-    printf("\n\nTc: %fs\n", Tc);
+    //printf("\n\nSerial Tc: %fs\n", Tc);
     printf("Vaidating the results...\n");
     fflush(stdout);
 

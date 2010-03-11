@@ -8,6 +8,6 @@ do
   for i in $(seq 0 10)
   do
     printf "matrix size: %d\n" "${array[i]}"
-    mpirun -np $n ./mm ${array[size]} | grep -E "^Tt"
+    mpirun -np $n ./mm ${array[i]} 
   done
 done
