@@ -96,7 +96,6 @@ volatile int gZero = 0;
 int main( int argc, char *argv[] )
 {
   // --------------------- Local Variables ------------------------
-		
   int N;
   int P;
 
@@ -121,19 +120,14 @@ int main( int argc, char *argv[] )
   gP = P;
   gN = N;
 
-
   // Avoid optimizations with gZero
   gZero = 1;
+  // Set a random seed
   srand( ( int ) GetTime() );
   gZero = 0;
 
-  // Set a random seed
-		
-
   // Print the program parameters.
   printf( "Running with P=%d N=%d\n", gP, gN );
-
-
 
   // --------------------- Tests -------------------------
 
@@ -148,7 +142,6 @@ int main( int argc, char *argv[] )
 
   // Lock Performance
   RunTest( LockPerformance, "Lock Performance" );
-
 
   // --------------------- Return ------------------------
   return( 0 );
@@ -183,7 +176,6 @@ void RunTest( void * ( * func)( void * ), char * str )
   // ------------------- Run Tests ------------------------
   for ( testnum = 0; testnum < REPEATTESTS; testnum++ )
   {
-
     my_mutex_init( &gMutex );
     my_barrier_init( &gBarrier, gP );
 
@@ -202,12 +194,12 @@ void RunTest( void * ( * func)( void * ), char * str )
     }
     else
     {
-      printf( "-" ); fflush( stdout );
+      printf( "-" );
+      fflush( stdout );
     }
   }
 
   timesum /= REPEATTESTS;
-
 
   // ------------------- Print Outcome ---------------------
   printf( "\nTests passed: %d of %d. Average Time = %f (sec)\n", 
@@ -322,7 +314,6 @@ void JoinThreads( pthread_t **ppThreads, int P, ThreadParameters_t **ppParameter
   *ppParameters = NULL;
 
   // ----------------- Return -------------------------------
-
   return;
 }
 
@@ -351,7 +342,6 @@ double GetTime( void )
   localtime += ( double ) tp.tv_sec;
 
   // ------------------- Return Time ----------------------
-
   return( localtime );
 }
 
@@ -369,20 +359,17 @@ double GetTime( void )
 */
 void * LockPerformance( void *parameters )
 {
-	
   // ----------------------- Local Variables ------------------
   int i;
   int localN; // On the stack for performance.
   int j;
   ThreadParameters_t *par;
 
-
   // ---------------------- Initialization -------------------------
   par = ( ThreadParameters_t * ) parameters;
   localN = gN*15;
 
   my_barrier_wait( &gBarrier );
-
 
   // ---------------------- Run Tests -------------------------
   for ( j = 0; j < 10; j++ )
@@ -435,7 +422,6 @@ void * LockCorrectness( void *parameters )
 
   my_barrier_wait( &gBarrier );
 
-
   // ---------------------- Run Tests -------------------------
   for ( i = 0; i < localN; i++ )
   {
@@ -457,13 +443,13 @@ void * LockCorrectness( void *parameters )
   // ----------------------- Check for sucess ---------------------
   expectedresult = localN * gP;
 
+  // validate the result
   if ( gTestVariable != expectedresult )
   {
     return( NULL );
   }
 
   return( ( void * ) 1 );
-
 }
 
 /*
@@ -501,9 +487,7 @@ void * BarrierCorrectness( void *parameters )
 
   my_barrier_wait( &gBarrier );
 
-
   // ---------------------- Run Tests -------------------------
-
   for ( i = 0; i < localN; i++ )
   {
     // Read a shared variable
@@ -524,6 +508,7 @@ void * BarrierCorrectness( void *parameters )
     {
       tmp += gZero;
     }
+  
     // Atomically add the value to the test variable
     __sync_fetch_and_add( &gTestVariable, tmp );
 
