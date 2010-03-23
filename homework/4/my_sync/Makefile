@@ -14,7 +14,7 @@
 
 CC = gcc
 INCLUDED = -I./
-CCFLAGS = -Wall -Wextra -O3 $(INCLUDED)
+CCFLAGS = -Wall -Wextra -O0 -g $(INCLUDED)
 
 OBJS = primitives.o my_sync.o
 

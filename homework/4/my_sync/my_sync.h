@@ -3,12 +3,12 @@
 
 // Type definition
 typedef struct _my_mutex_t{
-  int lock;
+  volatile int lock;
 }my_mutex_t;
 
-typedef struct _my_barrier_t{
-  int lock;
-}my_barrier_t;
+#define LOCKED 1
+#define FREE   0
+#define LOCK_WAIT_INTERVAL 1000
 
 // Function definition
 // For mutex
@@ -21,6 +21,16 @@ void my_mutex_unlock(my_mutex_t * p);
 void my_mutex_destroy(my_mutex_t * p);
 
 // For barrier
+typedef struct _my_barrier_t{
+  volatile int sense;
+  volatile int num_p;
+  volatile int cur_p;
+}my_barrier_t;
+
+#define BARRIER_NA    0
+#define BARRIER_AVAIL 1
+#define BARRIER_WAIT_INTERVAL 1000
+
 void my_barrier_init(my_barrier_t * p, int n);
 
 void my_barrier_wait(my_barrier_t * p);
