@@ -165,6 +165,7 @@ void queue_init(queue * q, int id){
   q->tail = NULL;
   q->item_num = 0;
   q->queue_id = id;
+  pthread_mutex_init(&(q->mutex), NULL);
 }
 
 // push an item to the end of the queue
@@ -174,6 +175,9 @@ void queue_push(queue * q, int thread_id, int thread_write_num){
     puts(malloc_error);
     return;
   }
+
+  // lock the current queue
+  pthread_mutex_lock(&(q->mutex));
 
   // initialize the item
   item->thread_id = thread_id;
@@ -204,6 +208,9 @@ void queue_push(queue * q, int thread_id, int thread_write_num){
     q->tail = item;
     ++(q->item_num);
   }
+  
+  // unlock the current queue
+  pthread_mutex_unlock(&(q->mutex));
 }
 
 // output the queue
@@ -249,6 +256,7 @@ void queue_free(queue *q){
   q->head = NULL;
   q->tail = NULL;
   q->item_num = 0;
+  pthread_mutex_init(&(q->mutex), NULL);
 }
 
 double GetTime(void){
