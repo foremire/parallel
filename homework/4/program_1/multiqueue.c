@@ -63,6 +63,8 @@ int main(int argc, char *argv[]){
 
   create_threads(&threads, thread_num, queue_thread, &param, common_param);
   join_threads(threads, thread_num, param);
+  threads = NULL;
+  param = NULL;
 
   queue_free(queues);
   return 0;
@@ -70,8 +72,6 @@ int main(int argc, char *argv[]){
 
 void create_threads(pthread_t **ppThreads, int thread_num, thread_func func, 
     thread_param ** pparam, thread_param common_param){
-  int cycleI;
-  thread_param * parameters;
   
   pthread_t *threads;
   threads = *ppThreads = (pthread_t *)malloc(sizeof( pthread_t ) * thread_num);
@@ -79,6 +79,8 @@ void create_threads(pthread_t **ppThreads, int thread_num, thread_func func,
     puts(malloc_error);
     exit(-1);
   }
+
+  thread_param * parameters;
   parameters = *pparam = (thread_param *)malloc(sizeof(thread_param) * thread_num);
   if(NULL == pparam){
     puts(malloc_error);
@@ -86,14 +88,15 @@ void create_threads(pthread_t **ppThreads, int thread_num, thread_func func,
   }
 
   // Initialize the parameters
-  for (cycleI = 0; cycleI < thread_num; ++cycleI){
+  int cycleI = 0;
+  for (cycleI = 0; cycleI < thread_num; ++ cycleI){
     parameters[cycleI] = common_param;
     parameters[cycleI].thread_id = cycleI;
   }
 
   // ------------------- Create Threads ---------------------
   // Create threads
-  for (cycleI = 0; cycleI < thread_num - 1; ++cycleI){
+  for (cycleI = 0; cycleI < thread_num - 1; ++ cycleI){
     pthread_create(&threads[cycleI],
     NULL,	// Default attibutes
     func,	///void *(*start_routine)(void *),
@@ -103,7 +106,7 @@ void create_threads(pthread_t **ppThreads, int thread_num, thread_func func,
   // Timing: To help other threads complete creation, the
   // master thread will sleep.
   usleep(150000);
-  func( &parameters[thread_num - 1] );
+  func(&parameters[thread_num - 1]);
 
   return;
 }
@@ -140,9 +143,10 @@ void * queue_thread(void * p){
   int queue_num = param->queue_num;
 
   int cycleI = 0;
-  for(cycleI = 0; cycleI < write_times; ++cycleI){
+  for(cycleI = 0; cycleI < write_times; ++ cycleI){
+    // randomly select a queue to write
     int queue_id = random() % queue_num;
-    queue_push(&queues[queue_id], thread_id);
+    queue_push(&queues[queue_id], thread_id, cycleI);
   }
 
   return((void *)1);
@@ -157,7 +161,7 @@ void queue_init(queue * q, int id){
 }
 
 // push an item to the end of the queue
-void queue_push(queue * q, int thread_id){
+void queue_push(queue * q, int thread_id, int thread_write_num){
   queue_item * item = NULL;
   if(NULL == (item = (queue_item *)malloc(sizeof(queue_item)))){
     puts(malloc_error);
@@ -166,7 +170,17 @@ void queue_push(queue * q, int thread_id){
 
   // initialize the item
   item->thread_id = thread_id;
+  item->thread_write_num = thread_write_num;
   item->next = NULL;
+
+  // get the cumulative sum of all the first elements in the queue
+  int cum_sum_first = 0;
+  queue_item * ptr = q->head;
+  while(ptr){
+    cum_sum_first += ptr->thread_write_num;
+    ptr = ptr->next;
+  }
+  item->cum_sum = cum_sum_first;
 
   // push the item to the end of the queue
   if(NULL == q->head){
@@ -178,6 +192,7 @@ void queue_push(queue * q, int thread_id){
     q->tail = item;
     ++(q->item_num);
   }else{
+    // this should not happen
     q->tail = item;
     ++(q->item_num);
   }
@@ -193,13 +208,11 @@ void queue_output(queue * q, thread_param param){
   int cum_sum_first = 0;
   int cum_sum_second = 0;
 
-  queue_item * item = q->head;
-  queue_item * next = item;
-  while(item){
-    next = item->next;
-    cum_sum_first += item->thread_write_num;
-    cum_sum_second += item->thread_id;
-    item = next;
+  queue_item * ptr = q->head;
+  while(ptr){
+    cum_sum_first += ptr->thread_write_num;
+    cum_sum_second += ptr->thread_id;
+    ptr = ptr->next;
   }
 
   printf("Queue %d of %d:\n", q->queue_id, param.thread_num);

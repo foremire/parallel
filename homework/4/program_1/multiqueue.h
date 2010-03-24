@@ -37,7 +37,7 @@ void * queue_thread(void * p);
 void queue_init(queue * q, int id);
 
 // push an item to the end of the queue
-void queue_push(queue * q, int thread_id);
+void queue_push(queue * q, int thread_id, int thread_written_num);
 
 // output the queue
 void queue_output(queue * q, thread_param param);
