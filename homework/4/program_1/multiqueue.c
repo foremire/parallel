@@ -65,6 +65,12 @@ int main(int argc, char *argv[]){
   join_threads(threads, thread_num, param);
   threads = NULL;
   param = NULL;
+ 
+  // output the result
+  for(cycleI = 0; cycleI < queue_num; ++ cycleI){
+    printf("\n");
+    queue_output(&queues[cycleI], common_param);
+  }
 
   queue_free(queues);
   return 0;
@@ -145,6 +151,7 @@ void * queue_thread(void * p){
   int cycleI = 0;
   for(cycleI = 0; cycleI < write_times; ++ cycleI){
     // randomly select a queue to write
+    srand((int)GetTime());
     int queue_id = random() % queue_num;
     queue_push(&queues[queue_id], thread_id, cycleI);
   }
@@ -181,6 +188,7 @@ void queue_push(queue * q, int thread_id, int thread_write_num){
     ptr = ptr->next;
   }
   item->cum_sum = cum_sum_first;
+  item->cum_sum += thread_write_num;
 
   // push the item to the end of the queue
   if(NULL == q->head){
@@ -215,14 +223,14 @@ void queue_output(queue * q, thread_param param){
     ptr = ptr->next;
   }
 
-  printf("Queue %d of %d:\n", q->queue_id, param.thread_num);
+  printf("Queue %d of %d:\n", q->queue_id + 1, param.queue_num);
   printf("N=%d\n", param.write_times);
   printf("%d items in queue\n", q->item_num);
   printf("Cumulative sum of first elements = %d\n", cum_sum_first);
   printf("Cumulative sum of second elements = %d\n", cum_sum_second);
-  printf("Last elementof last item = %d\n", q->tail->cum_sum);
+  printf("Last element of last item = %d\n", q->tail->cum_sum);
   printf("Summary: [Queue %d/%d, N=%d, %d times, Sums = (%d,%d,%d)]\n",
-      q->queue_id, param.thread_num, param.write_times, q->item_num,
+      q->queue_id + 1, param.queue_num, param.write_times, q->item_num,
       cum_sum_first, cum_sum_second, q->tail->cum_sum);
 }
 
