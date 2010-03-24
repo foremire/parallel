@@ -9,8 +9,7 @@
 char * usage = "Usage:\nexecutable <thread_num> <quere_num> <write_times>\n";
 char * malloc_error = "malloc error!\n";
 
-int main( int argc, char *argv[] )
-{
+int main(int argc, char *argv[]){
   int thread_num = 0;
   int queue_num = 0;
   int write_times = 0;
@@ -55,8 +54,7 @@ int main( int argc, char *argv[] )
 }
 
 void create_threads(pthread_t **ppThreads, int P, thread_func func, 
-    thread_param ** pparam, int thread_num, queue * queues)
-{
+    thread_param ** pparam, int thread_num, queue * queues){
   int cycleI;
   thread_param * parameters;
   
@@ -91,8 +89,23 @@ void create_threads(pthread_t **ppThreads, int P, thread_func func,
   return;
 }
 
-double GetTime( void )
-{
+void join_threads(pthread_t * threads, int thread_num, thread_param * param){
+  int cycleI;
+  void *retvalue;
+
+  for (cycleI = 0; cycleI < thread_num - 1; ++cycleI){
+    pthread_join(threads[cycleI], &retvalue);
+    if (NULL == retvalue){
+    }
+  }
+
+  free(threads);
+  free(param);
+  return;
+}
+
+
+double GetTime(void){
   // ------------------- Local Variables ------------------
   struct timeval tp;
   double localtime;
