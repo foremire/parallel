@@ -4,7 +4,7 @@ CC = cc
 CFLAGS = -c -g -Wall -O0
 LINKFLAGS = -lpthread
 OUTPUT = program_1_out.txt
-RUN = ./$(PROJECT) 2 1 4
+RUN = ./$(PROJECT) 1 2 4
 
 $(PROJECT) : $(OBJS)
 	$(CC) $(OBJS) -o $(PROJECT) $(LINKFLAGS)

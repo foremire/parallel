@@ -19,7 +19,7 @@ int main(int argc, char *argv[]){
   queue * queues = NULL;
 
   // Check for correct number of arguments
-  if (argc < 4)
+  if(argc < 4)
   {
     puts(usage);
     return 0;
@@ -30,7 +30,7 @@ int main(int argc, char *argv[]){
   queue_num = atoi(argv[2]);
   write_times = atoi(argv[3]);
 
-  // Set the minimum to 1
+  // Make sure the parameters is not less than 1
   thread_num = (thread_num < 1) ? 1 : thread_num;
   queue_num = (queue_num < 1) ? 1 : queue_num;
   write_times = (write_times < 1) ? 1 : write_times;
@@ -46,10 +46,25 @@ int main(int argc, char *argv[]){
     exit(-1);
   }
 
+  // initialize the queues
   for(cycleI = 0; cycleI < queue_num; ++ cycleI){
     queue_init(&queues[cycleI], cycleI);
   }
 
+  pthread_t * threads = NULL;
+  thread_param * param = NULL;
+  
+  thread_param common_param;
+  common_param.queues = queues;
+  common_param.thread_id = 0;
+  common_param.thread_num = thread_num;
+  common_param.write_times = write_times;
+  common_param.queue_num = queue_num;
+
+  create_threads(&threads, thread_num, queue_thread, &param, common_param);
+  join_threads(threads, thread_num, param);
+
+  queue_free(queues);
   return 0;
 }
 
@@ -65,6 +80,10 @@ void create_threads(pthread_t **ppThreads, int thread_num, thread_func func,
     exit(-1);
   }
   parameters = *pparam = (thread_param *)malloc(sizeof(thread_param) * thread_num);
+  if(NULL == pparam){
+    puts(malloc_error);
+    exit(-1);
+  }
 
   // Initialize the parameters
   for (cycleI = 0; cycleI < thread_num; ++cycleI){
@@ -127,21 +146,6 @@ void * queue_thread(void * p){
   }
 
   return((void *)1);
-}
-
-double GetTime(void){
-  // ------------------- Local Variables ------------------
-  struct timeval tp;
-  double localtime;
-
-  // ------------------- Get Time -------------------------
-  gettimeofday( &tp, NULL );
-  localtime = ( double ) tp.tv_usec;
-  localtime /= 1e6;
-  localtime += ( double ) tp.tv_sec;
-
-  // ------------------- Return Time ----------------------
-  return( localtime );
 }
 
 // initialize the queue
@@ -224,5 +228,20 @@ void queue_free(queue *q){
   q->head = NULL;
   q->tail = NULL;
   q->item_num = 0;
+}
+
+double GetTime(void){
+  // ------------------- Local Variables ------------------
+  struct timeval tp;
+  double localtime;
+
+  // ------------------- Get Time -------------------------
+  gettimeofday( &tp, NULL );
+  localtime = ( double ) tp.tv_usec;
+  localtime /= 1e6;
+  localtime += ( double ) tp.tv_sec;
+
+  // ------------------- Return Time ----------------------
+  return( localtime );
 }
 

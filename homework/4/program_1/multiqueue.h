@@ -26,6 +26,13 @@ typedef struct _thread_param{
   int queue_num;
 }thread_param;
 
+void create_threads(pthread_t **ppThreads, int thread_num, thread_func func, 
+    thread_param ** pparam, thread_param common_param);
+
+void join_threads(pthread_t * threads, int thread_num, thread_param * param);
+
+void * queue_thread(void * p);
+
 // initialize the queue
 void queue_init(queue * q, int id);
 
