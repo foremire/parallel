@@ -47,7 +47,7 @@ int main(int argc, char *argv[]){
   }
 
   for(cycleI = 0; cycleI < queue_num; ++ cycleI){
-    queue_init(&queues[cycleI]);
+    queue_init(&queues[cycleI], cycleI);
   }
 
   return 0;
@@ -144,15 +144,16 @@ double GetTime(void){
   return( localtime );
 }
 
-// Initialize the queue
-void queue_init(queue * q){
+// initialize the queue
+void queue_init(queue * q, int id){
   q->head = NULL;
   q->tail = NULL;
   q->item_num = 0;
+  q->queue_id = id;
 }
 
 // push an item to the end of the queue
-void queue_push(queue * q, int thread_num){
+void queue_push(queue * q, int thread_id){
   queue_item * item = NULL;
   if(NULL == (item = (queue_item *)malloc(sizeof(queue_item)))){
     puts(malloc_error);
@@ -160,7 +161,7 @@ void queue_push(queue * q, int thread_num){
   }
 
   // initialize the item
-  item->thread_num = thread_num;
+  item->thread_id = thread_id;
   item->next = NULL;
 
   // push the item to the end of the queue
@@ -176,6 +177,36 @@ void queue_push(queue * q, int thread_num){
     q->tail = item;
     ++(q->item_num);
   }
+}
+
+// output the queue
+void queue_output(queue * q, thread_param param){
+  if(NULL == q->head){
+    printf("Empty Queue");
+    return;
+  }
+
+  int cum_sum_first = 0;
+  int cum_sum_second = 0;
+
+  queue_item * item = q->head;
+  queue_item * next = item;
+  while(item){
+    next = item->next;
+    cum_sum_first += item->thread_write_num;
+    cum_sum_second += item->thread_id;
+    item = next;
+  }
+
+  printf("Queue %d of %d:\n", q->queue_id, param.thread_num);
+  printf("N=%d\n", param.write_times);
+  printf("%d items in queue\n", q->item_num);
+  printf("Cumulative sum of first elements = %d\n", cum_sum_first);
+  printf("Cumulative sum of second elements = %d\n", cum_sum_second);
+  printf("Last elementof last item = %d\n", q->tail->cum_sum);
+  printf("Summary: [Queue %d/%d, N=%d, %d times, Sums = (%d,%d,%d)]\n",
+      q->queue_id, param.thread_num, param.write_times, q->item_num,
+      cum_sum_first, cum_sum_second, q->tail->cum_sum);
 }
 
 // free the queue

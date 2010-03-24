@@ -3,7 +3,7 @@
 
 typedef struct _queue_item{
   int thread_write_num;
-  int thread_num;
+  int thread_id;
   int cum_sum;
   struct _queue_item * next;
 }queue_item;
@@ -13,6 +13,7 @@ typedef struct _queue{
   queue_item * head;
   queue_item * tail;
   int item_num;
+  int queue_id;
 }queue;
 
 typedef void * (* thread_func)(void *);
@@ -25,12 +26,14 @@ typedef struct _thread_param{
   int queue_num;
 }thread_param;
 
-
-// Initialize the queue
-void queue_init(queue * q);
+// initialize the queue
+void queue_init(queue * q, int id);
 
 // push an item to the end of the queue
-void queue_push(queue * q, int thread_num);
+void queue_push(queue * q, int thread_id);
+
+// output the queue
+void queue_output(queue * q, thread_param param);
 
 // free the queue
 void queue_free(queue *q);
