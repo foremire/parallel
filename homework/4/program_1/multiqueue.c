@@ -38,7 +38,7 @@ int main( int argc, char *argv[] )
   // Print the program parameters.
   printf("Running with P=%d M=%d N=%d\n", thread_num, queue_num, write_times);
 
-  return( 0 );
+  return 0;
 }
 
 double GetTime( void )
