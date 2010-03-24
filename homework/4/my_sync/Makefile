@@ -37,8 +37,7 @@ all: $(OBJS)
 
 run:
 	./performance 3500 8 | tee results.txt
-#	./performance 3500 16 | tee -a results.txt
-#	./performance 2 4
+	./performance 3500 16 | tee -a results.txt
 	
 clean:
 	rm -rf performance
