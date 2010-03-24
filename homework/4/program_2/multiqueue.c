@@ -9,12 +9,18 @@
 char * usage = "Usage:\nexecutable <thread_num> <quere_num> <write_times>\n";
 char * malloc_error = "malloc error!\n";
 
+int g_validate_cum_sum_first;
+int g_validate_cum_sum_second;
+
 int main(int argc, char *argv[]){
   int thread_num = 0;
   int queue_num = 0;
   int write_times = 0;
 
-  int cycleI;
+  int cycleI = 0;
+
+  g_validate_cum_sum_first = 0;
+  g_validate_cum_sum_second = 0;
 
   queue * queues = NULL;
 
@@ -73,6 +79,12 @@ int main(int argc, char *argv[]){
   }
 
   queue_free(queues);
+
+  int expect_cum_sum_first = thread_num * write_times * (write_times - 1) / 2;
+  int expect_cum_sum_second = write_times * thread_num * (thread_num - 1) / 2;
+  printf("\nCumulative Sum: %d,%d\n", g_validate_cum_sum_first, g_validate_cum_sum_second);
+  printf("Expected Sum: %d,%d\n", expect_cum_sum_first, expect_cum_sum_second);
+
   return 0;
 }
 
@@ -239,6 +251,8 @@ void queue_output(queue * q, thread_param param){
   printf("Summary: [Queue %d/%d, N=%d, %d times, Sums = (%d,%d,%d)]\n",
       q->queue_id + 1, param.queue_num, param.write_times, q->item_num,
       cum_sum_first, cum_sum_second, q->tail->cum_sum);
+  g_validate_cum_sum_first += cum_sum_first;
+  g_validate_cum_sum_second += cum_sum_second;
 }
 
 // free the queue
