@@ -6,31 +6,36 @@
 
 #include "multiqueue.h"
 
+char * usage = "Usage:\nexecutable <thread_num> <quere_num> <write_times>\n";
+
 int main( int argc, char *argv[] )
 {
-  int N = 0;
-  int P = 0;
+  int thread_num = 0;
+  int queue_num = 0;
+  int write_times = 0;
 
   // Check for correct number of arguments
-  if ( argc < 3 )
+  if (argc < 4)
   {
-    printf( "Usage:\nexecutable N P\n" );
-    return( 0 );
+    puts(usage);
+    return 0;
   }
 
   // Get parameters
-  N = atoi( argv[ 1 ] );
-  P = atoi( argv[ 2 ] );
+  thread_num = atoi(argv[1]);
+  queue_num = atoi(argv[2]);
+  write_times = atoi(argv[3]);
 
   // Set the minimum to 1
-  P = ( P < 1 ) ? 1 : P;
-  N = ( N < 1 ) ? 1 : N;
+  thread_num = (thread_num < 1) ? 1 : thread_num;
+  queue_num = (queue_num < 1) ? 1 : queue_num;
+  write_times = (write_times < 1) ? 1 : write_times;
 
   // Set a random seed
-  srand( ( int ) GetTime() );
+  srand((int)GetTime());
 
   // Print the program parameters.
-  printf( "Running with P=%d N=%d\n", P, N );
+  printf("Running with P=%d M=%d N=%d\n", thread_num, queue_num, write_times);
 
   return( 0 );
 }

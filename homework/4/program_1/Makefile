@@ -3,7 +3,7 @@ OBJS = $(PROJECT).o
 CC = cc
 CFLAGS = -c -g
 OUTPUT = results.txt
-RUN = ./$(PROJECT) 2 4
+RUN = ./$(PROJECT) 2 1 4
 
 $(PROJECT) : $(OBJS)
 	$(CC) $(OBJS) -o $(PROJECT)
