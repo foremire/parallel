@@ -236,9 +236,7 @@ void CreateThreads( pthread_t **ppThreads, int P,
     parameters[ i ].id = i;
   }
 
-
   // ------------------- Create Threads ---------------------
-
   // Create threads
   for ( i = 0; i < P-1; i++ )
   {
@@ -253,7 +251,6 @@ void CreateThreads( pthread_t **ppThreads, int P,
   usleep( 150000 );
 
   // ------------------- Set the timer ----------------------
-
   // Start Counting Time
   gElapsedTime = GetTime();
 
@@ -330,12 +327,10 @@ void JoinThreads( pthread_t **ppThreads, int P, ThreadParameters_t **ppParameter
 double GetTime( void )
 {
   // ------------------- Local Variables ------------------
-		
   struct timeval tp;
   double localtime;
 
   // ------------------- Get Time -------------------------
-
   gettimeofday( &tp, NULL );
   localtime = ( double ) tp.tv_usec;
   localtime /= 1e6;
@@ -402,7 +397,6 @@ void * LockPerformance( void *parameters )
 */
 void * LockCorrectness( void *parameters )
 {
-	
   // ----------------------- Local Variables ------------------
   int i;
   int localN; // On the stack for performance.
@@ -412,7 +406,6 @@ void * LockCorrectness( void *parameters )
   int delaysteps;
 		
   ThreadParameters_t *par;
-
 
   // ---------------------- Initialization -------------------------
   par = ( ThreadParameters_t * ) parameters;
@@ -464,21 +457,16 @@ void * LockCorrectness( void *parameters )
 */
 void * BarrierCorrectness( void *parameters )
 {
-	
   // ----------------------- Local Variables ------------------
-
   int i;
   int localN; // On the stack for performance.
   int tmp;
   int j;
   int delaysteps;
   int goodbarrier;
-		
   ThreadParameters_t *par;
 
-
   // ---------------------- Initialization -------------------------
-
   par = ( ThreadParameters_t * ) parameters;
   localN = gN*6;
   gTestVariable = 0;

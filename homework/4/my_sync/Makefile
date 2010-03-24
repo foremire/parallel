@@ -14,7 +14,7 @@
 
 CC = gcc
 INCLUDED = -I./
-CCFLAGS = -Wall -Wextra -O0 -g $(INCLUDED)
+CCFLAGS = -Wall -Wextra -O3 $(INCLUDED)
 
 OBJS = primitives.o my_sync.o
 
@@ -37,7 +37,8 @@ all: $(OBJS)
 
 run:
 	./performance 3500 8 | tee results.txt
-	./performance 3500 16 | tee -a results.txt
+#	./performance 3500 16 | tee -a results.txt
+#	./performance 2 4
 	
 clean:
 	rm -rf performance
