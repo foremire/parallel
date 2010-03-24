@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include <pthread.h>
-#include <unistd.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/time.h>
+#include <pthread.h>
 
 #include "multiqueue.h"
 
@@ -14,6 +14,10 @@ int main( int argc, char *argv[] )
   int thread_num = 0;
   int queue_num = 0;
   int write_times = 0;
+
+  int cycleI;
+
+  queue * queues = NULL;
 
   // Check for correct number of arguments
   if (argc < 4)
@@ -38,7 +42,53 @@ int main( int argc, char *argv[] )
   // Print the program parameters.
   printf("Running with P=%d M=%d N=%d\n", thread_num, queue_num, write_times);
 
+  if(NULL == (queues = (queue *)malloc(queue_num * sizeof(queue)))){
+    puts(malloc_error);
+    exit(-1);
+  }
+
+  for(cycleI = 0; cycleI < queue_num; ++ cycleI){
+    queue_init(&queues[cycleI]);
+  }
+
   return 0;
+}
+
+void create_threads(pthread_t **ppThreads, int P, thread_func func, 
+    thread_param ** pparam, int thread_num, queue * queues)
+{
+  int cycleI;
+  thread_param * parameters;
+  
+  pthread_t *threads;
+  threads = *ppThreads = (pthread_t *)malloc(sizeof( pthread_t ) * P);
+  if(NULL == threads){
+    puts(malloc_error);
+    exit(-1);
+  }
+  parameters = *pparam = (thread_param *)malloc(sizeof(thread_param) * thread_num);
+
+  // Initialize the parameters
+  for (cycleI = 0; cycleI < thread_num; ++cycleI){
+    parameters[cycleI].queues = queues;
+    parameters[cycleI].thread_id = cycleI;
+  }
+
+  // ------------------- Create Threads ---------------------
+  // Create threads
+  for (cycleI = 0; cycleI < thread_num - 1; ++cycleI){
+    pthread_create(&threads[cycleI],
+    NULL,	// Default attibutes
+    func,	///void *(*start_routine)(void *),
+    &parameters[cycleI]);
+  }
+
+  // Timing: To help other threads complete creation, the
+  // master thread will sleep.
+  usleep(150000);
+  func( &parameters[thread_num - 1] );
+
+  return;
 }
 
 double GetTime( void )

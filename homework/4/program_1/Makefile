@@ -1,12 +1,13 @@
 PROJECT = multiqueue
 OBJS = $(PROJECT).o
 CC = cc
-CFLAGS = -c -g
+CFLAGS = -c -g -Wall -O0
+LINKFLAGS = -lpthread
 OUTPUT = program_1_out.txt
 RUN = ./$(PROJECT) 2 1 4
 
 $(PROJECT) : $(OBJS)
-	$(CC) $(OBJS) -o $(PROJECT)
+	$(CC) $(OBJS) -o $(PROJECT) $(LINKFLAGS)
 
 $(PROJECT).o : $(PROJECT).c $(PROJECT).h
 	$(CC) $(CFLAGS) $(PROJECT).c

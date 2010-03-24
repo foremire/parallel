@@ -15,6 +15,13 @@ typedef struct _queue{
   int item_num;
 }queue;
 
+typedef void * (* thread_func)(void *);
+
+typedef struct _thread_param{
+  queue * queues;
+  int thread_id;
+}thread_param;
+
 
 // Initialize the queue
 void queue_init(queue * q);
