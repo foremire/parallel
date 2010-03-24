@@ -53,13 +53,13 @@ int main(int argc, char *argv[]){
   return 0;
 }
 
-void create_threads(pthread_t **ppThreads, int P, thread_func func, 
-    thread_param ** pparam, int thread_num, queue * queues){
+void create_threads(pthread_t **ppThreads, int thread_num, thread_func func, 
+    thread_param ** pparam, thread_param common_param){
   int cycleI;
   thread_param * parameters;
   
   pthread_t *threads;
-  threads = *ppThreads = (pthread_t *)malloc(sizeof( pthread_t ) * P);
+  threads = *ppThreads = (pthread_t *)malloc(sizeof( pthread_t ) * thread_num);
   if(NULL == threads){
     puts(malloc_error);
     exit(-1);
@@ -68,7 +68,7 @@ void create_threads(pthread_t **ppThreads, int P, thread_func func,
 
   // Initialize the parameters
   for (cycleI = 0; cycleI < thread_num; ++cycleI){
-    parameters[cycleI].queues = queues;
+    parameters[cycleI] = common_param;
     parameters[cycleI].thread_id = cycleI;
   }
 
@@ -104,6 +104,30 @@ void join_threads(pthread_t * threads, int thread_num, thread_param * param){
   return;
 }
 
+// Thread function to manipulate the queue
+void * queue_thread(void * p){
+  thread_param * param = (thread_param *)p;
+  if(NULL == param){
+    return NULL;
+  }
+
+  queue * queues = param->queues;
+  if(NULL == queues){
+    return NULL;
+  }
+  
+  int thread_id = param->thread_id;
+  int write_times = param->write_times;
+  int queue_num = param->queue_num;
+
+  int cycleI = 0;
+  for(cycleI = 0; cycleI < write_times; ++cycleI){
+    int queue_id = random() % queue_num;
+    queue_push(&queues[queue_id], thread_id);
+  }
+
+  return((void *)1);
+}
 
 double GetTime(void){
   // ------------------- Local Variables ------------------

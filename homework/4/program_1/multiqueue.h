@@ -20,6 +20,9 @@ typedef void * (* thread_func)(void *);
 typedef struct _thread_param{
   queue * queues;
   int thread_id;
+  int thread_num;
+  int write_times;
+  int queue_num;
 }thread_param;
 
 
