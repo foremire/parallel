@@ -270,7 +270,7 @@ void queue_free(queue *q){
   q->head = NULL;
   q->tail = NULL;
   q->item_num = 0;
-  pthread_mutex_init(&(q->mutex), NULL);
+  pthread_mutex_destroy(&(q->mutex));
 }
 
 double GetTime(void){

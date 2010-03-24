@@ -14,7 +14,7 @@ typedef struct _queue{
   queue_item * tail;
   int item_num;
   int queue_id;
-  pthread_mutex_t mutex;
+  my_mutex_t mutex;
 }queue;
 
 typedef void * (* thread_func)(void *);
