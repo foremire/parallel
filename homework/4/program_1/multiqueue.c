@@ -7,6 +7,7 @@
 #include "multiqueue.h"
 
 char * usage = "Usage:\nexecutable <thread_num> <quere_num> <write_times>\n";
+char * malloc_error = "malloc error!\n";
 
 int main( int argc, char *argv[] )
 {
@@ -54,5 +55,56 @@ double GetTime( void )
 
   // ------------------- Return Time ----------------------
   return( localtime );
+}
+
+// Initialize the queue
+void queue_init(queue * q){
+  q->head = NULL;
+  q->tail = NULL;
+  q->item_num = 0;
+}
+
+// push an item to the end of the queue
+void queue_push(queue * q, int thread_num){
+  queue_item * item = NULL;
+  if(NULL == (item = (queue_item *)malloc(sizeof(queue_item)))){
+    puts(malloc_error);
+    return;
+  }
+
+  // initialize the item
+  item->thread_num = thread_num;
+  item->next = NULL;
+
+  // push the item to the end of the queue
+  if(NULL == q->head){
+    q->head = item;
+    q->tail = item;
+    q->item_num = 1;
+  }else if(NULL != q->tail){
+    q->tail->next = item;
+    q->tail = item;
+    ++(q->item_num);
+  }else{
+    q->tail = item;
+    ++(q->item_num);
+  }
+}
+
+// free the queue
+void queue_free(queue *q){
+  if(NULL == q->head){
+    return;
+  }
+  queue_item * item = q->head;
+  queue_item * next = item;
+  while(item){
+    next = item->next;
+    free(item);
+    item = next;
+  }
+  q->head = NULL;
+  q->tail = NULL;
+  q->item_num = 0;
 }
 

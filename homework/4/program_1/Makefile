@@ -2,13 +2,13 @@ PROJECT = multiqueue
 OBJS = $(PROJECT).o
 CC = cc
 CFLAGS = -c -g
-OUTPUT = results.txt
+OUTPUT = program_1_out.txt
 RUN = ./$(PROJECT) 2 1 4
 
 $(PROJECT) : $(OBJS)
 	$(CC) $(OBJS) -o $(PROJECT)
 
-$(PROJECT).o : $(PROJECT).c
+$(PROJECT).o : $(PROJECT).c $(PROJECT).h
 	$(CC) $(CFLAGS) $(PROJECT).c
 
 all : $(PROJECT)
