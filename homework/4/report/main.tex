@@ -124,8 +124,8 @@ The barrier was defined as below:
 typedef struct _my_barrier_t{
   volatile int sense;
   volatile int num_p;
-  volatile int cur_p;
-  volatile int occupied;
+  volatile int cur_p;				// how many threads has reached the barrier
+  volatile int occupied;			// whether the barrier is occupied
   volatile my_mutex_t lock;
 }my_barrier_t;
 
@@ -211,7 +211,47 @@ Now running [Lock Performance]
 Tests passed: 10 of 10. Average Time = 0.405896 (sec)
 \end{verbatim}
 
+\section{The multiqueue program}
+\subsection{Description}
+In the multiqueue program, P threads have to write numbers to queues.
 
+There are M queues. Each queue item is composed of 3 elements: The 
+first one is how many times that particular thread has written to ANY 
+queue in the past. The second one is the thread number, and the third 
+one is the cumulative sum of all the first elements of the queue.
+
+\subsection{Answer}
+The source code were placed in \texttt{program\_1}, \texttt{program\_2}
+\texttt{program\_3} and \texttt{program\_4} respectively.
+
+The graph of N vs total time for the programs is shown in Fig.\ref{fig:1}.
+The total time of all programs increase with N. For program 1, since there
+is no synchronization overhead, the time is much shorter than others given
+the same N. For programs with synchronization, program 2 performs best as it
+use mutex provided by libpthread which was well optimized. The performance 4
+a bit worse than program 3 because it needs extra operation to get the value
+of the fourth element when each item is append to the queue.
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=0.8\textwidth, angle=0]{figure_1.pdf}
+		\caption{\label{fig:1}N vs total time for the programs}
+	\end{center}
+\end{figure}
+The graph of P vs total time for the programs is shown in Fig.\ref{fig:2}.
+The total time of all programs increases with P. For program 1, the total time
+is higher than others given the same P, because there is no overhead between 
+threads. So the number of threads does not matter much with the performance.
+Basically the time for program 1 with thread number greater than 1 is near its
+maximum value when P=8. For other programs, the more threads, the more time 
+needed as the synchronization overhead.
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=0.8\textwidth, angle=0]{figure_2.pdf}
+		\caption{\label{fig:2}P vs total time for the programs}
+	\end{center}
+\end{figure}
 
 \end{document}
 
