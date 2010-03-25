@@ -87,7 +87,6 @@ int main(int argc, char *argv[]){
   long expect_cum_sum_second = write_times * thread_num * (thread_num - 1) / 2;
   printf("\nCumulative Sum: %ld,%ld\n", g_validate_cum_sum_first, g_validate_cum_sum_second);
   printf("Expected Sum: %ld,%ld\n", expect_cum_sum_first, expect_cum_sum_second);
-
   printf("Time Elapsed: %fs\n", gElapsedTime);
 
   return 0;
