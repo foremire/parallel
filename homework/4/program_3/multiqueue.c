@@ -10,8 +10,8 @@
 char * usage = "Usage:\nexecutable <thread_num> <quere_num> <write_times>\n";
 char * malloc_error = "malloc error!\n";
 
-int g_validate_cum_sum_first;
-int g_validate_cum_sum_second;
+long g_validate_cum_sum_first;
+long g_validate_cum_sum_second;
 
 int main(int argc, char *argv[]){
   int thread_num = 0;
@@ -81,10 +81,10 @@ int main(int argc, char *argv[]){
 
   queue_free(queues);
 
-  int expect_cum_sum_first = thread_num * write_times * (write_times - 1) / 2;
-  int expect_cum_sum_second = write_times * thread_num * (thread_num - 1) / 2;
-  printf("\nCumulative Sum: %d,%d\n", g_validate_cum_sum_first, g_validate_cum_sum_second);
-  printf("Expected Sum: %d,%d\n", expect_cum_sum_first, expect_cum_sum_second);
+  long expect_cum_sum_first = thread_num * write_times * (write_times - 1) / 2;
+  long expect_cum_sum_second = write_times * thread_num * (thread_num - 1) / 2;
+  printf("\nCumulative Sum: %ld,%ld\n", g_validate_cum_sum_first, g_validate_cum_sum_second);
+  printf("Expected Sum: %ld,%ld\n", expect_cum_sum_first, expect_cum_sum_second);
 
   return 0;
 }
