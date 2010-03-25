@@ -15,7 +15,8 @@ xliu@ece.udel.edu}
 \subsection{Description}
 The objective of this part is to learn how to write fast synchronization 
 primitives. And what are the key characteristics that they expose.
-Research what atomic operations can be used on cluster. A few suggestions 
+
+Research what atomic operations can be used on cluster. A few suggestions 
 read the file \texttt{/proc/cpuinfo} on cluster, and read the following 
 website:
 
@@ -73,7 +74,7 @@ void __sync_lock_release (type *ptr, ...)
 The first function performs a full memory barrier. The last two functions were 
 not traditional test-and-set operations, but rather an atomic exchange operation. 
 The second function writes value into \texttt{*ptr}, and returns the previous 
-contents of \texttt{*ptr} and the third function write the constant 0 to 
+contents of \texttt{*ptr} and the third function write the constant \texttt{0} to 
 \texttt{*ptr}.
 
 \section{Primitive implementation and performance evaluation}
@@ -82,7 +83,7 @@ The objective of this part of the homework is to learn how to write
 synchronization operations.
 
 \subsection{Answer}
-The source code were placed in directory \texttt{my\_sync}.
+The source code was placed in directory \texttt{my\_sync}.
 
 The mutex was defined as below:
 \begin{verbatim}
@@ -110,14 +111,14 @@ The the lock operation, since \texttt{\_\_sync\_bool\_compare\_and\_swap}
 will check the value \texttt{p->lock} is equal with \texttt{FREE}. 
 If the mutex if locked, \texttt{p->lock} will be \texttt{LOCKED} and
 \texttt{\_\_sync\_bool\_compare\_and\_swap} will return false with nothing
-changed. So the current thread will wait for \texttt{LOCK\_WAIT\_INTERVAL}
+changed, and the current thread will wait for \texttt{LOCK\_WAIT\_INTERVAL}
 microseconds and check it again. If the lock is freed, \texttt{p->lock} 
 will be \texttt{FREE} and \texttt{\_\_sync\_bool\_compare\_and\_swap} will 
 set it back to \texttt{LOCKED} and return true. Then the function
-\texttt{my\_mutex\_lock} will return and the current thread will be the 
-owner of the lock. Since the lock and unlock were implemented in atomic 
+\texttt{my\_mutex\_lock} will return and the current thread will get the 
+ownership of the lock. Since the lock and unlock were implemented in atomic 
 operation, it's guaranteed that \texttt{p->lock} will be accessed by only one
-thread at any times. 
+thread at any time1.
 
 The barrier was defined as below:
 \begin{verbatim}
@@ -135,7 +136,7 @@ typedef struct _my_barrier_t{
 #define BARRIER_OCCUPIED 1
 #define BARRIER_WAIT_INTERVAL 100
 \end{verbatim}
-and the wait operation was defined as
+and the wait operation was implemented as below:
 \begin{verbatim}
 void my_barrier_wait(my_barrier_t * p){
   while(BARRIER_OCCUPIED == p->occupied){
@@ -144,7 +145,7 @@ void my_barrier_wait(my_barrier_t * p){
 
   // lock it first
   my_mutex_lock((my_mutex_t*)&(p->lock));
-  // Atomically add the the counter of current peers
+  // Atomically increment the the counter of current peers
   ++(p->cur_p);
   
   if(p->cur_p == p->num_p){
@@ -157,7 +158,7 @@ void my_barrier_wait(my_barrier_t * p){
   // unlock it then
   my_mutex_unlock((my_mutex_t*)&(p->lock));
 
-  // else, wait for other peers
+  // wait for other peers
   while(BARRIER_NA == p->sense){
     usleep(BARRIER_WAIT_INTERVAL);
   }
@@ -176,12 +177,12 @@ These is a mutex lock in one barrier to ensure the increase operation for
 the barrier, \texttt{p->sense} will be marked to notify other peers to leave
 the barrier. \texttt{p->occupied} will also be marked so all the threads will 
 not run into another barrier. Instead they will wait before the next barrier 
-until all the thread have leave the previous barrier and \texttt{p->occupied} 
+until all the threads have leave the previous barrier and \texttt{p->occupied} 
 is cleared. Without \texttt{p->occupied} it will got stuck into infinite waiting
 state if some thread have not leaved the previous barrier while other threads
 have already run into a new barrier.
 
-The result were shown as below:
+The results were shown as below:
 \begin{verbatim}
 Running with P=8 N=3500
 Now running [Barrier Correctness]
@@ -230,7 +231,7 @@ is no synchronization overhead, the time is much shorter than others given
 the same N. For programs with synchronization, program 2 performs best as it
 use mutex provided by libpthread which was well optimized. The performance 4
 a bit worse than program 3 because it needs extra operation to get the value
-of the fourth element when each item is append to the queue.
+of the fourth element when each item is appended to the queue.
 
 \begin{figure}[h!]
 	\begin{center}
@@ -243,8 +244,10 @@ The total time of all programs increases with P. For program 1, the total time
 is higher than others given the same P, because there is no overhead between 
 threads. So the number of threads does not matter much with the performance.
 Basically the time for program 1 with thread number greater than 1 is near its
-maximum value when P=8. For other programs, the more threads, the more time 
-needed as the synchronization overhead.
+maximum value when P=8. For other programs, the more threads, the higher 
+probability of conflicts, thus the more time needed as the synchronization 
+overhead. Again, program 2 outperforms both program 3 and 4 given by the 
+same P.
 
 \begin{figure}[h!]
 	\begin{center}

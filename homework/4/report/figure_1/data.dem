@@ -2,7 +2,7 @@ set term post enh
 set output "figure_1.eps"
 set title  "N vs Total time (M = 8, N = 8)"
 set xlabel "N"
-set ylabel "Time"
+set ylabel "Time(s)"
 set ytics border in scale 1,0.5 mirror norotate  offset character 0, 0, 0 
 set xrange [ 10000: 75000 ] noreverse nowriteback
 set yrange [ 0.0000 : 125.0000 ] noreverse nowriteback
