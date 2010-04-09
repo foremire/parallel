@@ -146,9 +146,6 @@ void init_matrix(matrix * mat, int xDim, int yDim, int random){
 }
 
 void omp_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC, int thread_num){
-  int cycleI = 0;
-  int cycleJ = 0;
-  int cycleK = 0;
   int dim = 0;
 
   // check whether the dimension of the three matrices match 
@@ -164,17 +161,19 @@ void omp_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC, int thread_n
     return;
   }
 
-  int num_per_thread = 0;
-  int remainder = 0;
-  int range_start = 0;
-  int range_end = 0;
-  int range_len = 0;
-  int thread_id = 0;
   
+  int thread_id = 0;
+
   // calculate the sum in parallel
   omp_set_num_threads(thread_num);
-#pragma omp parallel private (thread_id, num_per_thread, remainder, range_start, range_end, range_len, cycleI, cycleJ, cycleK) shared (matrixC)
+#pragma omp parallel private (thread_id) shared (matrixC)
   {
+    int num_per_thread = 0;
+    int remainder = 0;
+    int range_start = 0;
+    int range_end = 0;
+    int range_len = 0;
+
     // get the thread id
     thread_id = omp_get_thread_num();
     
@@ -192,8 +191,12 @@ void omp_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC, int thread_n
       : range_start + num_per_thread + 1;
     range_len = range_end - range_start;
 
-    printf("thread_id: %d, range_start: %d, range_end: %d\n", 
-        thread_id, range_start, range_end);
+    //printf("thread_id: %d, range_start: %d, range_end: %d\n", 
+    //    thread_id, range_start, range_end);
+    
+    int cycleI = 0;
+    int cycleJ = 0;
+    int cycleK = 0;
 
     for(cycleI = range_start; cycleI < range_end; ++ cycleI){
       for(cycleJ = 0; cycleJ < matrixB.xDim; ++ cycleJ){
