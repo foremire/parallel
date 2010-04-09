@@ -35,7 +35,7 @@ void omp_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC);
 void serial_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC);
 void print_matrix(matrix * mat);
 double get_duration(struct timeval __start);
-void validate_result(matrix * matrixA, matrix * matrixB);
+void validate_result(matrix matrixA, matrix matrixB);
 
 int main( int argc, char *argv[] )
 {
@@ -71,8 +71,24 @@ int main( int argc, char *argv[] )
   gettimeofday(&__start, NULL);
   Ti = get_duration(__start);
 
-  init_matrix(&matrixA, matrix_size, matrix_size, 1);
+  init_matrix(&matrixA, matrix_size, matrix_size, TRUE);
+  init_matrix(&matrixB, matrix_size, matrix_size, TRUE);
+  init_matrix(&matrixC, matrix_size, matrix_size, FALSE);
+  init_matrix(&matrixCValid, matrix_size, matrix_size, FALSE);
 
+  // do it in parallel way
+  omp_matrix_mul(matrixA, matrixB, matrixC);
+ 
+  // do it in serial way
+  serial_matrix_mul(matrixA, matrixB, matrixCValid);
+
+  // validate the result
+  validate_result(matrixC, matrixCValid);
+
+  SAFE_FREE(matrixA.data);
+  SAFE_FREE(matrixB.data);
+  SAFE_FREE(matrixC.data);
+  SAFE_FREE(matrixCValid.data);
   return 0;
 }
 
@@ -126,6 +142,19 @@ void omp_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC){
     printf("matrix A and matrix C's dimension do not match\n");
     return;
   }
+  
+  for(cycleI = 0; cycleI < matrixA.yDim; ++ cycleI){
+    for(cycleJ = 0; cycleJ < matrixB.xDim; ++ cycleJ){
+      
+      matrixC.data[cycleI * dim + cycleJ] = 0.0;
+
+      for(cycleK = 0; cycleK < dim; ++ cycleK){
+        matrixC.data[cycleI * dim + cycleJ] += 
+          matrixA.data[cycleI * matrixA.xDim + cycleK] *
+          matrixB.data[cycleJ + cycleK * matrixB.xDim];
+      }
+    }
+  }
 }
 
 
@@ -160,6 +189,37 @@ void serial_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC){
       }
     }
   }
+}
+
+void validate_result(matrix matrixA, matrix matrixB){
+  int cycleI = 0;
+  int cycleJ = 0;
+
+  int match = 0;
+  int mismatch = 0;
+  int size = 0;
+
+  // check whether the dimension of the three matrices match 
+  // with each other to conduct the following multiplication
+  if((matrixA.xDim != matrixB.xDim) || (matrixA.yDim != matrixB.yDim)){
+    printf("matrix A and matrix B's dimension do not match\n");
+    return;
+  }
+
+  size = matrixA.xDim * matrixA.yDim;
+  
+  for(cycleI = 0; cycleI < matrixA.yDim; ++ cycleI){
+    for(cycleJ = 0; cycleJ < matrixA.xDim; ++ cycleJ){
+      if(matrixA.data[cycleI * matrixA.xDim + cycleJ] != 
+          matrixB.data[cycleI * matrixA.xDim + cycleJ]){
+        ++ mismatch;
+      }else{
+        ++ match;
+      }
+    }
+  }
+
+  printf("%d numbers in total, %d matched, %d mismatched\n", size, match, mismatch);
 }
 
 void safe_exit(matrix ma, matrix mb, matrix mc, matrix me){
