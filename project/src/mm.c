@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <omp.h>
+#include <papi.h>
 
 // macro
 #define OUTPUT_THRESHOLD 7
@@ -48,10 +49,6 @@ int main( int argc, char *argv[] )
   int matrix_size = 0;
   int thread_num = 1;
 
-  struct timeval __start;
-  double t_omp = 0.0f;
-  double t_serial = 0.0f;
-
   if(argc < 3){
     puts(usage);
     exit(-1);
@@ -74,6 +71,32 @@ int main( int argc, char *argv[] )
   if(thread_num > matrix_size){
     thread_num = matrix_size;
   }
+
+  // initialize PAPI
+  int ret = PAPI_library_init( PAPI_VER_CURRENT );
+  if ( ret != PAPI_VER_CURRENT ){
+    printf(" Failed on init. Returned Value = %d != %d\n", ret, PAPI_VER_CURRENT );
+    exit(-1);
+  }
+  
+  int EventSet = PAPI_NULL;
+  long_long values[ 2 ];
+  ret = PAPI_create_eventset( &EventSet );
+  if ( ret != PAPI_OK ){
+    printf( "Error creating the event set\n" );
+    exit(-1);
+  }
+  
+  ret = PAPI_add_event( EventSet, PAPI_TOT_CYC );
+  if ( ret != PAPI_OK ){
+    printf( "Error on add_event\n" );
+    exit(-1);
+  }
+  ret = PAPI_add_event( EventSet, PAPI_FP_OPS );
+  if ( ret != PAPI_OK ){
+    printf( "Error on add_event\n" );
+    exit(-1);
+  }
   
   init_matrix(&matrixA, matrix_size, matrix_size, TRUE);
   init_matrix(&matrixB, matrix_size, matrix_size, TRUE);
@@ -81,35 +104,40 @@ int main( int argc, char *argv[] )
   init_matrix(&matrixCValid, matrix_size, matrix_size, FALSE);
 
   // do it in parallel way
-  gettimeofday(&__start, NULL);
+  PAPI_start(EventSet);
   omp_matrix_mul(matrixA, matrixB, matrixC, thread_num);
-  t_omp = get_duration(__start);
-  printf("omp time: %.6fs\n", t_omp);
+  PAPI_stop(EventSet, values);
+
+  double cycles = ( double ) values[ 0 ];
+  double time = cycles / 2.33e9;
+  double flop = ( double ) values[ 1 ];
+  double mflops = flop / time / 1.0e6;
+
+  printf( "Total Cycles (Millions) = %3.3f\n", cycles / 1.0e6 );
+  printf( "Total Time (Seconds) = %3.3f\n", time );
+  printf( "Total Flops (Millions) = %3.3f\n", flop / 1.0e6 );
+  printf( "MFLOPS = %3.3f\n", mflops );
  
   // do it in serial way
-  gettimeofday(&__start, NULL);
+  PAPI_start(EventSet);
   serial_matrix_mul(matrixA, matrixB, matrixCValid);
-  t_serial = get_duration(__start);
-  printf("serial time: %.6fs\n", t_serial);
+  PAPI_stop(EventSet, values);
+  
+  double cycles_s = ( double ) values[ 0 ];
+  double time_s = cycles_s / 2.33e9;
+  double speed_up = time_s / time;
+  printf( "Speed up = %3.3f\n", speed_up );
 
   // validate the result
   validate_result(matrixC, matrixCValid);
-
-  if(matrix_size < OUTPUT_THRESHOLD){
-    puts("matrix A:\n");
-    print_matrix(matrixA);
-    
-    puts("matrix B:\n");
-    print_matrix(matrixB);
-    
-    puts("matrix C:\n");
-    print_matrix(matrixC);
-  }
 
   SAFE_FREE(matrixA.data);
   SAFE_FREE(matrixB.data);
   SAFE_FREE(matrixC.data);
   SAFE_FREE(matrixCValid.data);
+		
+  PAPI_cleanup_eventset(EventSet);
+  PAPI_destroy_eventset(&EventSet);
   return 0;
 }
 
