@@ -1,0 +1,11 @@
+set term post enh
+set output "speedup.eps"
+#set title  "Speedup vs problem size."
+set xlabel "Problem Size"
+set ylabel "Speedup"
+set ytics border in scale 1,0.5 mirror norotate  offset character 0, 0, 0 
+set xrange [ 0: 1200 ] noreverse nowriteback
+set yrange [ 0.0000 : 7.0000 ] noreverse nowriteback
+set lmargin 9
+set rmargin 2
+plot 'data.txt' using 1:2 title "omp" with lines lt 1
