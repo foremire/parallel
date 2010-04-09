@@ -34,7 +34,7 @@ char * malloc_error = "malloc() ERROR.\n";
 void init_matrix(matrix * mat, int xDim, int yDim, int random);
 void omp_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC, int thread_num);
 void serial_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC);
-void print_matrix(matrix * mat);
+void print_matrix(matrix mat);
 double get_duration(struct timeval __start);
 void validate_result(matrix matrixA, matrix matrixB);
 
@@ -49,7 +49,8 @@ int main( int argc, char *argv[] )
   int thread_num = 1;
 
   struct timeval __start;
-  double Ti = 0.0f;
+  double t_omp = 0.0f;
+  double t_serial = 0.0f;
 
   if(argc < 3){
     puts(usage);
@@ -68,23 +69,42 @@ int main( int argc, char *argv[] )
     printf(matrix_size_error, matrix_size);
     exit(-1);
   }
+ 
+  // make sure the thread_num is always less than or euqal to matrix_size
+  if(thread_num > matrix_size){
+    thread_num = matrix_size;
+  }
   
-  gettimeofday(&__start, NULL);
-  Ti = get_duration(__start);
-
   init_matrix(&matrixA, matrix_size, matrix_size, TRUE);
   init_matrix(&matrixB, matrix_size, matrix_size, TRUE);
   init_matrix(&matrixC, matrix_size, matrix_size, FALSE);
   init_matrix(&matrixCValid, matrix_size, matrix_size, FALSE);
 
   // do it in parallel way
+  gettimeofday(&__start, NULL);
   omp_matrix_mul(matrixA, matrixB, matrixC, thread_num);
+  t_omp = get_duration(__start);
+  printf("omp time: %.6fs\n", t_omp);
  
   // do it in serial way
+  gettimeofday(&__start, NULL);
   serial_matrix_mul(matrixA, matrixB, matrixCValid);
+  t_serial = get_duration(__start);
+  printf("serial time: %.6fs\n", t_serial);
 
   // validate the result
   validate_result(matrixC, matrixCValid);
+
+  if(matrix_size < OUTPUT_THRESHOLD){
+    puts("matrix A:\n");
+    print_matrix(matrixA);
+    
+    puts("matrix B:\n");
+    print_matrix(matrixB);
+    
+    puts("matrix C:\n");
+    print_matrix(matrixC);
+  }
 
   SAFE_FREE(matrixA.data);
   SAFE_FREE(matrixB.data);
@@ -165,22 +185,27 @@ void omp_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC, int thread_n
       range_start = thread_id * num_per_thread;
     }else{
       range_start = thread_id * (num_per_thread + 1);
-      range_start = (thread_id > remainder) ? range_start - thread_id + remainder : range_start;
+      range_start = (thread_id > remainder) ? range_start - thread_id + remainder 
+        : range_start;
     }
     range_end = (thread_id > remainder - 1) ? range_start + num_per_thread
       : range_start + num_per_thread + 1;
     range_len = range_end - range_start;
-  }
 
-  for(cycleI = 0; cycleI < matrixA.yDim; ++ cycleI){
-    for(cycleJ = 0; cycleJ < matrixB.xDim; ++ cycleJ){
-      
-      matrixC.data[cycleI * dim + cycleJ] = 0.0;
+    //printf("thread_id: %d, range_start: %d, range_end: %d\n", 
+    //    thread_id, range_start, range_end);
 
-      for(cycleK = 0; cycleK < dim; ++ cycleK){
-        matrixC.data[cycleI * dim + cycleJ] += 
-          matrixA.data[cycleI * matrixA.xDim + cycleK] *
-          matrixB.data[cycleJ + cycleK * matrixB.xDim];
+    for(cycleI = range_start; cycleI < range_end; ++ cycleI){
+      for(cycleJ = 0; cycleJ < matrixB.xDim; ++ cycleJ){
+
+        matrixC.data[cycleI * dim + cycleJ] = 0.0;
+
+        for(cycleK = 0; cycleK < dim; ++ cycleK){
+          matrixC.data[cycleI * dim + cycleJ] += 
+            matrixA.data[cycleI * matrixA.xDim + cycleK] *
+            matrixB.data[cycleJ + cycleK * matrixB.xDim];
+        }
+
       }
     }
   }
@@ -258,14 +283,14 @@ void safe_exit(matrix ma, matrix mb, matrix mc, matrix me){
   SAFE_FREE(me.data);
 }
 
-void print_matrix(matrix * mat){
+void print_matrix(matrix mat){
   int cycleI = 0;
   int cycleJ = 0;
   double val = 0.0;
 
-  for(cycleI = 0; cycleI < mat->yDim; ++ cycleI){
-    for(cycleJ = 0; cycleJ < mat->xDim; ++ cycleJ){
-      val = mat->data[cycleI * mat->xDim + cycleJ];
+  for(cycleI = 0; cycleI < mat.yDim; ++ cycleI){
+    for(cycleJ = 0; cycleJ < mat.xDim; ++ cycleJ){
+      val = mat.data[cycleI * mat.xDim + cycleJ];
       if(val >= 0.0){
         printf("+%f\t", val);
       }else{
