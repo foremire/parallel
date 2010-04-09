@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <omp.h>
+#include <papi.h>
 
 // macro
 #define OUTPUT_THRESHOLD 7
@@ -74,6 +75,32 @@ int main( int argc, char *argv[] )
   if(thread_num > matrix_size){
     thread_num = matrix_size;
   }
+
+  // initialize PAPI
+  int ret = PAPI_library_init( PAPI_VER_CURRENT );
+  if ( ret != PAPI_VER_CURRENT ){
+    printf(" Failed on init. Returned Value = %d != %d\n", ret, PAPI_VER_CURRENT );
+    exit(-1);
+  }
+  
+  int EventSet = PAPI_NULL;
+  long_long values[ 2 ];
+  ret = PAPI_create_eventset( &EventSet );
+  if ( ret != PAPI_OK ){
+    printf( "Error creating the event set\n" );
+    exit(-1);
+  }
+  
+  ret = PAPI_add_event( EventSet, PAPI_TOT_CYC );
+  if ( ret != PAPI_OK ){
+    printf( "Error on add_event\n" );
+    exit(-1);
+  }
+  ret = PAPI_add_event( EventSet, PAPI_FP_OPS );
+  if ( ret != PAPI_OK ){
+    printf( "Error on add_event\n" );
+    exit(-1);
+  }
   
   init_matrix(&matrixA, matrix_size, matrix_size, TRUE);
   init_matrix(&matrixB, matrix_size, matrix_size, TRUE);
@@ -82,7 +109,11 @@ int main( int argc, char *argv[] )
 
   // do it in parallel way
   gettimeofday(&__start, NULL);
+
+  PAPI_start( EventSet );
   omp_matrix_mul(matrixA, matrixB, matrixC, thread_num);
+  PAPI_stop( EventSet, values );
+
   t_omp = get_duration(__start);
   printf("omp time: %.6fs\n", t_omp);
   fflush(stdout);

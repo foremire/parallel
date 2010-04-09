@@ -1,21 +1,39 @@
+############################
+#
+# Makefile written by Xitong Liu
+# April 9th, 2010
+#
+#############################
+
+##################################################################
+#						Makefile Variables
+##################################################################
+
 PROJECT = mm
+PAPISRC = /usr/local/papi-3.7.1
 OBJS = $(PROJECT).o
+
+INCLUDEPATH = $(PAPISRC)/include
+INCLUDES = -I$(INCLUDEPATH) -I.
+LIBPATH = $(PAPISRC)/lib
+LIBS = -lpapi -lgomp
+LIBRARIES = -L$(LIBPATH) $(LIBS)
+
 CC = cc
-CFLAGS = -c -g -Wall -fopenmp
-LD_FLAG = -lgomp
+CFLAGS = -c -g -Wall -fopenmp $(INCLUDES)
 OUTPUT = results_mm.txt
 RUN = ./$(PROJECT) 8 543
 
-$(PROJECT) : $(OBJS)
-	$(CC) $(OBJS) $(LD_FLAG) -o $(PROJECT)
+.c.o:
+	$(CC) $(CFLAGS) -c $<
 
-$(PROJECT).o : $(PROJECT).c
-	$(CC) $(CFLAGS) $(PROJECT).c
+$(PROJECT) : $(OBJS)
+	$(CC) $(OBJS) $(LIBRARIES) -o $(PROJECT)
 
 all : $(PROJECT)
 
 run : all
-	$(RUN) | tee $(OUTPUT)
+	export LD_LIBRARY_PATH=$(LIBPATH) && $(RUN) | tee $(OUTPUT)
 
 clean :
 	rm -f *.o
