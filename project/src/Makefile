@@ -4,7 +4,7 @@ CC = cc
 CFLAGS = -c -g -Wall -fopenmp
 LD_FLAG = -lgomp
 OUTPUT = results_mm.txt
-RUN = ./$(PROJECT) 5 10
+RUN = ./$(PROJECT) 8 543
 
 $(PROJECT) : $(OBJS)
 	$(CC) $(OBJS) $(LD_FLAG) -o $(PROJECT)

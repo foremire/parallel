@@ -85,12 +85,14 @@ int main( int argc, char *argv[] )
   omp_matrix_mul(matrixA, matrixB, matrixC, thread_num);
   t_omp = get_duration(__start);
   printf("omp time: %.6fs\n", t_omp);
+  fflush(stdout);
  
   // do it in serial way
   gettimeofday(&__start, NULL);
   serial_matrix_mul(matrixA, matrixB, matrixCValid);
   t_serial = get_duration(__start);
   printf("serial time: %.6fs\n", t_serial);
+  fflush(stdout);
 
   // validate the result
   validate_result(matrixC, matrixCValid);
