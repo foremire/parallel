@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <omp.h>
 
 // macro
 #define OUTPUT_THRESHOLD 7
@@ -31,7 +32,7 @@ char * malloc_error = "malloc() ERROR.\n";
 
 // function declaration
 void init_matrix(matrix * mat, int xDim, int yDim, int random);
-void omp_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC);
+void omp_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC, int thread_num);
 void serial_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC);
 void print_matrix(matrix * mat);
 double get_duration(struct timeval __start);
@@ -77,7 +78,7 @@ int main( int argc, char *argv[] )
   init_matrix(&matrixCValid, matrix_size, matrix_size, FALSE);
 
   // do it in parallel way
-  omp_matrix_mul(matrixA, matrixB, matrixC);
+  omp_matrix_mul(matrixA, matrixB, matrixC, thread_num);
  
   // do it in serial way
   serial_matrix_mul(matrixA, matrixB, matrixCValid);
@@ -124,7 +125,7 @@ void init_matrix(matrix * mat, int xDim, int yDim, int random){
   }
 }
 
-void omp_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC){
+void omp_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC, int thread_num){
   int cycleI = 0;
   int cycleJ = 0;
   int cycleK = 0;
@@ -142,7 +143,35 @@ void omp_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC){
     printf("matrix A and matrix C's dimension do not match\n");
     return;
   }
+
+  int num_per_thread = 0;
+  int remainder = 0;
+  int range_start = 0;
+  int range_end = 0;
+  int range_len = 0;
+  int thread_id = 0;
   
+  // calculate the sum in parallel
+  omp_set_num_threads(thread_num);
+#pragma omp parallel private (thread_id, num_per_thread, remainder, range_start, range_end, range_len)
+  {
+    // get the thread id
+    thread_id = omp_get_thread_num();
+    
+    // Make sure the data is evenly distributed between the processes
+    num_per_thread = dim / thread_num;
+    remainder = dim % thread_num;
+    if(0 == remainder){
+      range_start = thread_id * num_per_thread;
+    }else{
+      range_start = thread_id * (num_per_thread + 1);
+      range_start = (thread_id > remainder) ? range_start - thread_id + remainder : range_start;
+    }
+    range_end = (thread_id > remainder - 1) ? range_start + num_per_thread
+      : range_start + num_per_thread + 1;
+    range_len = range_end - range_start;
+  }
+
   for(cycleI = 0; cycleI < matrixA.yDim; ++ cycleI){
     for(cycleJ = 0; cycleJ < matrixB.xDim; ++ cycleJ){
       
