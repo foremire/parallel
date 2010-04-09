@@ -33,7 +33,7 @@ $(PROJECT) : $(OBJS)
 all : $(PROJECT)
 
 run : all
-	export LD_LIBRARY_PATH=$(LIBPATH) && $(RUN) | tee $(OUTPUT)
+	$(RUN) | tee $(OUTPUT)
 
 clean :
 	rm -f *.o

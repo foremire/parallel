@@ -49,10 +49,6 @@ int main( int argc, char *argv[] )
   int matrix_size = 0;
   int thread_num = 1;
 
-  struct timeval __start;
-  double t_omp = 0.0f;
-  double t_serial = 0.0f;
-
   if(argc < 3){
     puts(usage);
     exit(-1);
@@ -108,22 +104,32 @@ int main( int argc, char *argv[] )
   init_matrix(&matrixCValid, matrix_size, matrix_size, FALSE);
 
   // do it in parallel way
-  gettimeofday(&__start, NULL);
 
-  PAPI_start( EventSet );
+  // Time measurement, in the old way
+  //struct timeval __start;
+  //double t_omp = 0.0f;
+  //double t_serial = 0.0f;
+  //gettimeofday(&__start, NULL);
+  //t_omp = get_duration(__start);
+  //printf("omp time: %.6fs\n", t_omp);
+  //fflush(stdout);
+
+  PAPI_start(EventSet);
   omp_matrix_mul(matrixA, matrixB, matrixC, thread_num);
-  PAPI_stop( EventSet, values );
+  PAPI_stop(EventSet, values);
 
-  t_omp = get_duration(__start);
-  printf("omp time: %.6fs\n", t_omp);
-  fflush(stdout);
+  double cycles = ( double ) values[ 0 ];
+  double time = cycles / 2.33e9;
+  double flop = ( double ) values[ 1 ];
+  double mflops = flop / time / 1.0e6;
+
+  printf( "Total Cycles (Millions) = %3.3f\n", cycles / 1.0e6 );
+  printf( "Total Time (Seconds) = %3.3f\n", time );
+  printf( "Total Flops (Millions) = %3.3f\n", flop / 1.0e6 );
+  printf( "MFLOPS = %3.3f\n", mflops );
  
   // do it in serial way
-  gettimeofday(&__start, NULL);
   serial_matrix_mul(matrixA, matrixB, matrixCValid);
-  t_serial = get_duration(__start);
-  printf("serial time: %.6fs\n", t_serial);
-  fflush(stdout);
 
   // validate the result
   validate_result(matrixC, matrixCValid);
@@ -143,6 +149,9 @@ int main( int argc, char *argv[] )
   SAFE_FREE(matrixB.data);
   SAFE_FREE(matrixC.data);
   SAFE_FREE(matrixCValid.data);
+		
+  PAPI_cleanup_eventset(EventSet);
+  PAPI_destroy_eventset(&EventSet);
   return 0;
 }
 
