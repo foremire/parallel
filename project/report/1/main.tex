@@ -97,6 +97,8 @@ and others will calculate 9 rows.
 \section{Performance Evaluation}
 \subsection{Speed}
 The Time vs problem size graph is shown is Fig.\ref{fig:speed}.
+To reach the maximum performance of parallelism, we set the 
+thread number to the number of cores available on the cluster: 8.
 \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=0.6\textwidth, angle=0]{speed.pdf}
@@ -117,7 +119,8 @@ Obviously, when the problem is small ( $N \le 200$ ), the speedup
 is less than 1, which means that the overhead for parallel program 
 overwhelmed the benefit. When the problem get greater, the speedup
 increases and is greater than 1. However, it stop growth when the 
-problem size reaches 800. 
+problem size reaches 800. This means that the speedup has reached 
+its bottleneck. Optimization will be done in the following days.
 
 \subsection{Memory Usage}
 Since we need two matrices to hold the operands for 
