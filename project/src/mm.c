@@ -173,7 +173,7 @@ void omp_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC, int thread_n
   
   // calculate the sum in parallel
   omp_set_num_threads(thread_num);
-#pragma omp parallel private (thread_id, num_per_thread, remainder, range_start, range_end, range_len) shared (matrixC)
+#pragma omp parallel private (thread_id, num_per_thread, remainder, range_start, range_end, range_len, cycleI, cycleJ, cycleK) shared (matrixC)
   {
     // get the thread id
     thread_id = omp_get_thread_num();
@@ -192,8 +192,8 @@ void omp_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC, int thread_n
       : range_start + num_per_thread + 1;
     range_len = range_end - range_start;
 
-    //printf("thread_id: %d, range_start: %d, range_end: %d\n", 
-    //    thread_id, range_start, range_end);
+    printf("thread_id: %d, range_start: %d, range_end: %d\n", 
+        thread_id, range_start, range_end);
 
     for(cycleI = range_start; cycleI < range_end; ++ cycleI){
       for(cycleJ = 0; cycleJ < matrixB.xDim; ++ cycleJ){
