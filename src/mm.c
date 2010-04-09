@@ -173,7 +173,7 @@ void omp_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC, int thread_n
   
   // calculate the sum in parallel
   omp_set_num_threads(thread_num);
-#pragma omp parallel private (thread_id, num_per_thread, remainder, range_start, range_end, range_len)
+#pragma omp parallel private (thread_id, num_per_thread, remainder, range_start, range_end, range_len) shared (matrixC)
   {
     // get the thread id
     thread_id = omp_get_thread_num();
