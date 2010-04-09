@@ -1,13 +1,9 @@
 #/bin/sh
 
-array=( 360 421 514 609 737 920 1160 1420 1770 2210 2850)
+array=( 50 100 200 300 400 500 600 700 800 900 1000 )
 
-for n in $(seq 2 10)
+for n in $(seq 0 10)
 do
-  printf "\nnp: %d\n" "$n"
-  for i in $(seq 0 10)
-  do
-    printf "matrix size: %d\n" "${array[i]}"
-    ./mm $i ${array[i]} 
-  done
+  printf "matrix size: %d\n" "${array[n]}"
+  ./mm 8 ${array[n]} 
 done
