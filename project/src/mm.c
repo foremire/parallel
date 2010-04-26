@@ -21,6 +21,7 @@ long_long serial_values[EVENT_SET_SIZE];
 long_long parallel_values[EVENT_SET_SIZE];
 
 int serial_event_set;
+int parallel_event_set;
 
 int main( int argc, char *argv[] )
 {
@@ -59,8 +60,6 @@ int main( int argc, char *argv[] )
   SAFE_FREE(matrixC.data);
   SAFE_FREE(matrixCValid.data);
 		
-  PAPI_cleanup_eventset(serial_event_set);
-  PAPI_destroy_eventset(&serial_event_set);
   return 0;
 }
 
@@ -101,6 +100,27 @@ void omp_mat_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC){
   int cycleI = 0;
   int cycleJ = 0;
   int cycleK = 0;
+  
+  // init PAPI
+  parallel_event_set = PAPI_NULL;
+  int ret = PAPI_create_eventset(&parallel_event_set);
+  if ( ret != PAPI_OK ){
+    printf( "Error creating the event set\n" );
+    exit(-1);
+  }
+  
+  ret = PAPI_add_event(parallel_event_set, PAPI_TOT_CYC);
+  if ( ret != PAPI_OK ){
+    printf( "Error on add_event\n" );
+    exit(-1);
+  }
+  ret = PAPI_add_event(parallel_event_set, PAPI_FP_OPS);
+  if ( ret != PAPI_OK ){
+    printf( "Error on add_event\n" );
+    exit(-1);
+  }
+
+  PAPI_start(parallel_event_set);
 
   #pragma omp parallel shared (matrixA, matrixB, matrixC)\
     private (cycleI, cycleJ, cycleK)
@@ -119,6 +139,10 @@ void omp_mat_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC){
       }
     }
   }
+
+  PAPI_stop(parallel_event_set, parallel_values);
+  PAPI_cleanup_eventset(parallel_event_set);
+  PAPI_destroy_eventset(&parallel_event_set);
 }
 
 void omp_mat_mul_div(matrix matrixA, matrix matrixB, matrix matrixC){
@@ -208,6 +232,8 @@ void serial_mat_mul(matrix matrixA, matrix matrixB, matrix matrixC){
     }
   }
   PAPI_stop(serial_event_set, serial_values);
+  PAPI_cleanup_eventset(serial_event_set);
+  PAPI_destroy_eventset(&serial_event_set);
 }
 
 void validate_result(matrix matrixA, matrix matrixB){
