@@ -16,13 +16,13 @@ OBJS = $(PROJECT).o
 INCLUDEPATH = $(PAPISRC)/include
 INCLUDES = -I$(INCLUDEPATH) -I.
 LIBPATH = $(PAPISRC)/lib
-LIBS = -lpapi -lgomp
+LIBS = -lpapi -lgomp -lm
 LIBRARIES = -L$(LIBPATH) $(LIBS)
 
 CC = cc
 CFLAGS = -c -g -Wall -fopenmp $(INCLUDES)
 OUTPUT = results_mm.txt
-RUN = ./$(PROJECT) 8 543
+RUN = ./$(PROJECT) 8 800
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<
