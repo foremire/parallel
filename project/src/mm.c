@@ -61,7 +61,7 @@ int main( int argc, char *argv[] )
   // do it in parallel way
   PAPI_start(EventSet);
 
-  omp_matrix_mul_baseline(matrixA, matrixB, matrixC);
+  omp_mat_mul_baseline(matrixA, matrixB, matrixC);
   
   PAPI_stop(EventSet, values);
 
@@ -77,7 +77,7 @@ int main( int argc, char *argv[] )
  
   // do it in serial way
   PAPI_start(EventSet);
-  serial_matrix_mul(matrixA, matrixB, matrixCValid);
+  serial_mat_mul(matrixA, matrixB, matrixCValid);
   PAPI_stop(EventSet, values);
   
   double cycles_s = ( double ) values[ 0 ];
@@ -130,7 +130,7 @@ void init_matrix(matrix * mat, int xDim, int yDim, int random){
   }
 }
 
-void omp_matrix_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC){
+void omp_mat_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC){
   
   int cycleI = 0;
   int cycleJ = 0;
@@ -155,7 +155,7 @@ void omp_matrix_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC){
   }
 }
 
-void omp_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC){
+void omp_mat_mul_div(matrix matrixA, matrix matrixB, matrix matrixC){
   int dim = matrixA.xDim;
   int thread_id = 0;
   int num_per_thread = dim / PROCESSOR_NUM;
@@ -190,7 +190,7 @@ void omp_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC){
 }
 
 
-void serial_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC){
+void serial_mat_mul(matrix matrixA, matrix matrixB, matrix matrixC){
   int cycleI = 0;
   int cycleJ = 0;
   int cycleK = 0;
