@@ -47,6 +47,8 @@ int main( int argc, char *argv[] )
   // do it in parallel way
   omp_mat_mul_baseline(matrixA, matrixB, matrixC);
 
+  sleep(2);
+
   // do it in serial way
   serial_mat_mul(matrixA, matrixB, matrixCValid);
  
@@ -94,7 +96,6 @@ void init_matrix(matrix * mat, int xDim, int yDim, int random){
     }
   }
 }
-
 void omp_mat_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC){
   
   int cycleI = 0;
@@ -103,28 +104,33 @@ void omp_mat_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC){
   
   // init PAPI
   parallel_event_set = PAPI_NULL;
-  int ret = PAPI_create_eventset(&parallel_event_set);
-  if ( ret != PAPI_OK ){
-    printf( "Error creating the event set\n" );
-    exit(-1);
-  }
   
-  ret = PAPI_add_event(parallel_event_set, PAPI_TOT_CYC);
-  if ( ret != PAPI_OK ){
-    printf( "Error on add_event\n" );
+  if(PAPI_thread_init((unsigned long (*)(void)) (omp_get_thread_num)) != PAPI_OK){
+    printf( "Error on thread_init\n" );
     exit(-1);
   }
-  ret = PAPI_add_event(parallel_event_set, PAPI_FP_OPS);
-  if ( ret != PAPI_OK ){
-    printf( "Error on add_event\n" );
-    exit(-1);
-  }
-
-  PAPI_start(parallel_event_set);
 
   #pragma omp parallel shared (matrixA, matrixB, matrixC)\
     private (cycleI, cycleJ, cycleK)
   {
+    /*
+    if(PAPI_OK != PAPI_create_eventset(&parallel_event_set)){
+      printf( "Error creating the event set\n" );
+      exit(-1);
+    }
+    
+    if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_TOT_CYC)){
+      printf( "Error on add_event\n" );
+      exit(-1);
+    }
+    if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_FP_OPS)){
+      printf( "Error on add_event\n" );
+      exit(-1);
+    }
+    */
+   
+    PAPI_start(parallel_event_set);
+
     #pragma omp for
     for(cycleI = 0; cycleI < matrixA.yDim; ++ cycleI){
       for(cycleJ = 0; cycleJ < matrixB.xDim; ++ cycleJ){
@@ -138,9 +144,9 @@ void omp_mat_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC){
 
       }
     }
+    PAPI_stop(parallel_event_set, parallel_values);
   }
 
-  PAPI_stop(parallel_event_set, parallel_values);
   PAPI_cleanup_eventset(parallel_event_set);
   PAPI_destroy_eventset(&parallel_event_set);
 }
