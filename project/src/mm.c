@@ -60,7 +60,9 @@ int main( int argc, char *argv[] )
 
   // do it in parallel way
   PAPI_start(EventSet);
-  omp_matrix_mul(matrixA, matrixB, matrixC);
+
+  omp_matrix_mul_baseline(matrixA, matrixB, matrixC);
+  
   PAPI_stop(EventSet, values);
 
   double cycles = ( double ) values[ 0 ];
@@ -128,22 +130,33 @@ void init_matrix(matrix * mat, int xDim, int yDim, int random){
   }
 }
 
+void omp_matrix_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC){
+  
+  int cycleI = 0;
+  int cycleJ = 0;
+  int cycleK = 0;
+
+  #pragma omp parallel shared (matrixA, matrixB, matrixC)\
+    private (cycleI, cycleJ, cycleK)
+  {
+    #pragma omp for
+    for(cycleI = 0; cycleI < matrixA.yDim; ++ cycleI){
+      for(cycleJ = 0; cycleJ < matrixB.xDim; ++ cycleJ){
+        matrixC.data[cycleI * matrixB.xDim + cycleJ] = 0.0;
+
+        for(cycleK = 0; cycleK < matrixA.xDim; ++ cycleK){
+          matrixC.data[cycleI * matrixA.xDim + cycleJ] += 
+            matrixA.data[cycleI * matrixA.xDim + cycleK] *
+            matrixB.data[cycleJ + cycleK * matrixB.xDim];
+        }
+
+      }
+    }
+  }
+}
+
 void omp_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC){
-  int dim = 0;
-
-  // check whether the dimension of the three matrices match 
-  // with each other to conduct the following multiplication
-  if(matrixA.xDim != matrixB.yDim){
-    printf("matrix A and matrix B's dimension do not match\n");
-    return;
-  }
-  dim = matrixA.xDim;
-
-  if((matrixA.xDim != matrixC.xDim) || (matrixA.yDim != matrixC.yDim)){
-    printf("matrix A and matrix C's dimension do not match\n");
-    return;
-  }
-
+  int dim = matrixA.xDim;
   int thread_id = 0;
   int num_per_thread = dim / PROCESSOR_NUM;
    

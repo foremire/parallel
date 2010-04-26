@@ -28,6 +28,7 @@ typedef struct _matrix{
 
 // function declaration
 void init_matrix(matrix * mat, int xDim, int yDim, int random);
+void omp_matrix_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC);
 void omp_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC);
 void serial_matrix_mul(matrix matrixA, matrix matrixB, matrix matrixC);
 double get_duration(struct timeval __start);
