@@ -6,13 +6,17 @@
 #include <sys/time.h>
 #include <omp.h>
 #include <papi.h>
-#include "common.h"
+#include "mm.h"
 
 // messages
 char * thread_num_error = "Invalid thread number P = %d. It must be greater than 0.\n";
 char * matrix_size_error = "Invalid matrix size N = %d. It must be greater than 1.\n";
 char * matrix_size_info = "Matrix Size N = %d\n";
 char * malloc_error = "malloc() ERROR.\n";
+
+
+// PAPI
+int EventSet;
 
 int main( int argc, char *argv[] )
 {
@@ -30,7 +34,7 @@ int main( int argc, char *argv[] )
     exit(-1);
   }
   
-  int EventSet = PAPI_NULL;
+  EventSet = PAPI_NULL;
   long_long values[ 2 ];
   ret = PAPI_create_eventset( &EventSet );
   if ( ret != PAPI_OK ){
@@ -242,26 +246,6 @@ void safe_exit(matrix ma, matrix mb, matrix mc, matrix me){
   SAFE_FREE(mb.data);
   SAFE_FREE(mc.data);
   SAFE_FREE(me.data);
-}
-
-void print_matrix(matrix mat){
-  int cycleI = 0;
-  int cycleJ = 0;
-  double val = 0.0;
-
-  for(cycleI = 0; cycleI < mat.yDim; ++ cycleI){
-    for(cycleJ = 0; cycleJ < mat.xDim; ++ cycleJ){
-      val = mat.data[cycleI * mat.xDim + cycleJ];
-      if(val >= 0.0){
-        printf("+%f\t", val);
-      }else{
-        printf("%f\t", val);
-      }
-    }
-    printf("\n");
-  }
-  fflush(stdout);
-  usleep(1000);
 }
 
 double get_duration(struct timeval __start){
