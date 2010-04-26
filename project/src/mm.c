@@ -14,12 +14,13 @@ char * matrix_size_error = "Invalid matrix size N = %d. It must be greater than 
 char * matrix_size_info = "Matrix Size N = %d\n";
 char * malloc_error = "malloc() ERROR.\n";
 
+// PAPI
+
 #define EVENT_SET_SIZE 4
 long_long serial_values[EVENT_SET_SIZE];
 long_long parallel_values[EVENT_SET_SIZE];
 
-// PAPI
-int EventSet;
+int serial_event_set;
 
 int main( int argc, char *argv[] )
 {
@@ -37,38 +38,16 @@ int main( int argc, char *argv[] )
     exit(-1);
   }
   
-  EventSet = PAPI_NULL;
-  ret = PAPI_create_eventset(&EventSet);
-  if ( ret != PAPI_OK ){
-    printf( "Error creating the event set\n" );
-    exit(-1);
-  }
-  
-  ret = PAPI_add_event(EventSet, PAPI_TOT_CYC);
-  if ( ret != PAPI_OK ){
-    printf( "Error on add_event\n" );
-    exit(-1);
-  }
-  ret = PAPI_add_event(EventSet, PAPI_FP_OPS);
-  if ( ret != PAPI_OK ){
-    printf( "Error on add_event\n" );
-    exit(-1);
-  }
-  
   init_matrix(&matrixA, matrix_size, matrix_size, TRUE);
   init_matrix(&matrixB, matrix_size, matrix_size, TRUE);
   init_matrix(&matrixC, matrix_size, matrix_size, FALSE);
   init_matrix(&matrixCValid, matrix_size, matrix_size, FALSE);
 
   // do it in parallel way
-  PAPI_start(EventSet);
   omp_mat_mul_baseline(matrixA, matrixB, matrixC);
-  PAPI_stop(EventSet, parallel_values);
 
   // do it in serial way
-  PAPI_start(EventSet);
   serial_mat_mul(matrixA, matrixB, matrixCValid);
-  PAPI_stop(EventSet, serial_values);
  
   // report the result
   report_result();
@@ -80,8 +59,8 @@ int main( int argc, char *argv[] )
   SAFE_FREE(matrixC.data);
   SAFE_FREE(matrixCValid.data);
 		
-  PAPI_cleanup_eventset(EventSet);
-  PAPI_destroy_eventset(&EventSet);
+  PAPI_cleanup_eventset(serial_event_set);
+  PAPI_destroy_eventset(&serial_event_set);
   return 0;
 }
 
@@ -196,6 +175,26 @@ void serial_mat_mul(matrix matrixA, matrix matrixB, matrix matrixC){
     return;
   }
 
+  // init PAPI
+  serial_event_set = PAPI_NULL;
+  int ret = PAPI_create_eventset(&serial_event_set);
+  if ( ret != PAPI_OK ){
+    printf( "Error creating the event set\n" );
+    exit(-1);
+  }
+  
+  ret = PAPI_add_event(serial_event_set, PAPI_TOT_CYC);
+  if ( ret != PAPI_OK ){
+    printf( "Error on add_event\n" );
+    exit(-1);
+  }
+  ret = PAPI_add_event(serial_event_set, PAPI_FP_OPS);
+  if ( ret != PAPI_OK ){
+    printf( "Error on add_event\n" );
+    exit(-1);
+  }
+
+  PAPI_start(serial_event_set);
   for(cycleI = 0; cycleI < matrixA.yDim; ++ cycleI){
     for(cycleJ = 0; cycleJ < matrixB.xDim; ++ cycleJ){
       
@@ -208,6 +207,7 @@ void serial_mat_mul(matrix matrixA, matrix matrixB, matrix matrixC){
       }
     }
   }
+  PAPI_stop(serial_event_set, serial_values);
 }
 
 void validate_result(matrix matrixA, matrix matrixB){
