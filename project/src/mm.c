@@ -14,6 +14,9 @@ char * matrix_size_error = "Invalid matrix size N = %d. It must be greater than 
 char * matrix_size_info = "Matrix Size N = %d\n";
 char * malloc_error = "malloc() ERROR.\n";
 
+#define EVENT_SET_SIZE 4
+long_long serial_values[EVENT_SET_SIZE];
+long_long parallel_values[EVENT_SET_SIZE];
 
 // PAPI
 int EventSet;
@@ -35,19 +38,18 @@ int main( int argc, char *argv[] )
   }
   
   EventSet = PAPI_NULL;
-  long_long values[ 2 ];
-  ret = PAPI_create_eventset( &EventSet );
+  ret = PAPI_create_eventset(&EventSet);
   if ( ret != PAPI_OK ){
     printf( "Error creating the event set\n" );
     exit(-1);
   }
   
-  ret = PAPI_add_event( EventSet, PAPI_TOT_CYC );
+  ret = PAPI_add_event(EventSet, PAPI_TOT_CYC);
   if ( ret != PAPI_OK ){
     printf( "Error on add_event\n" );
     exit(-1);
   }
-  ret = PAPI_add_event( EventSet, PAPI_FP_OPS );
+  ret = PAPI_add_event(EventSet, PAPI_FP_OPS);
   if ( ret != PAPI_OK ){
     printf( "Error on add_event\n" );
     exit(-1);
@@ -60,31 +62,16 @@ int main( int argc, char *argv[] )
 
   // do it in parallel way
   PAPI_start(EventSet);
-
   omp_mat_mul_baseline(matrixA, matrixB, matrixC);
-  
-  PAPI_stop(EventSet, values);
+  PAPI_stop(EventSet, parallel_values);
 
-  double cycles = ( double ) values[ 0 ];
-  double time = cycles / 2.33e9;
-  double flop = ( double ) values[ 1 ];
-  double mflops = flop / time / 1.0e6;
-
-  printf( "Total Cycles (Millions) = %3.3f\n", cycles / 1.0e6 );
-  printf( "Total Time (Seconds) = %3.3f\n", time );
-  printf( "Total Flops (Millions) = %3.3f\n", flop / 1.0e6 );
-  printf( "MFLOPS = %3.3f\n", mflops );
- 
   // do it in serial way
   PAPI_start(EventSet);
   serial_mat_mul(matrixA, matrixB, matrixCValid);
-  PAPI_stop(EventSet, values);
-  
-  double cycles_s = ( double ) values[ 0 ];
-  double time_s = cycles_s / 2.33e9;
-  double speed_up = time_s / time;
-  printf( "Speed up = %3.3f\n", speed_up );
-
+  PAPI_stop(EventSet, serial_values);
+ 
+  // report the result
+  report_result();
   // validate the result
   validate_result(matrixC, matrixCValid);
 
@@ -274,4 +261,31 @@ double get_duration(struct timeval __start){
   duration= t_end - t_start;
 
   return duration;
+}
+
+void report_result(){
+  double cycles_p = ( double ) parallel_values[ 0 ];
+  double time_p = cycles_p / 2.33e9;
+  double flop_p = ( double ) parallel_values[ 1 ];
+  double mflops_p = flop_p / time_p / 1.0e6;
+
+  printf( "\nParallel Version:\n");
+  printf( "Total Cycles (Millions) = %3.3f\n", cycles_p / 1.0e6 );
+  printf( "Total Time (Seconds) = %3.3f\n", time_p );
+  printf( "Total Flops (Millions) = %3.3f\n", flop_p / 1.0e6 );
+  printf( "MFLOPS = %3.3f\n", mflops_p );
+  
+  double cycles_s = ( double ) serial_values[ 0 ];
+  double time_s = cycles_s / 2.33e9;
+  double flop_s = ( double ) serial_values[ 1 ];
+  double mflops_s = flop_s / time_s / 1.0e6;
+
+  printf( "\nSerial Version:\n");
+  printf( "Total Cycles (Millions) = %3.3f\n", cycles_s / 1.0e6 );
+  printf( "Total Time (Seconds) = %3.3f\n", time_s );
+  printf( "Total Flops (Millions) = %3.3f\n", flop_s / 1.0e6 );
+  printf( "MFLOPS = %3.3f\n", mflops_s );
+  
+  double speed_up = time_s / time_p;
+  printf( "\nSpeed up = %3.3f\n", speed_up );
 }

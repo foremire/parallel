@@ -28,10 +28,13 @@ typedef struct _matrix{
 
 // function declaration
 void init_matrix(matrix * mat, int xDim, int yDim, int random);
+
 void omp_mat_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC);
 void omp_mat_mul(matrix matrixA, matrix matrixB, matrix matrixC);
 void serial_mat_mul(matrix matrixA, matrix matrixB, matrix matrixC);
+
 double get_duration(struct timeval __start);
 void validate_result(matrix matrixA, matrix matrixB);
+void report_result();
 
 #endif
