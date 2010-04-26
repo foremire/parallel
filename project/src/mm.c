@@ -30,6 +30,11 @@ int main( int argc, char *argv[] )
   matrix matrixC;
   matrix matrixCValid;
 
+  struct timeval __start;
+  double t_omp = 0.0f;
+  double t_serial = 0.0f;
+
+
   int matrix_size = MATRIX_SIZE;
 
   // initialize PAPI
@@ -45,15 +50,25 @@ int main( int argc, char *argv[] )
   init_matrix(&matrixCValid, matrix_size, matrix_size, FALSE);
 
   // do it in parallel way
-  omp_mat_mul_baseline(matrixA, matrixB, matrixC);
+  gettimeofday(&__start, NULL);
+  //omp_mat_mul_baseline(matrixA, matrixB, matrixC);
+  //omp_mat_mul_div(matrixA, matrixB, matrixC);
+  omp_mat_mul_transpose(matrixA, matrixB, matrixC);
+  t_omp = get_duration(__start);
 
-  sleep(2);
+  //sleep(2);
 
   // do it in serial way
+  gettimeofday(&__start, NULL);
   serial_mat_mul(matrixA, matrixB, matrixCValid);
+  t_serial = get_duration(__start);
  
   // report the result
-  report_result();
+  //report_result();
+  printf("Serial Time:%3.6f\n", t_serial);
+  printf("Parallel Time:%3.6f\n", t_omp);
+  printf("Speed Up:%3.6f\n", t_serial/t_omp);
+  
   // validate the result
   validate_result(matrixC, matrixCValid);
 
@@ -110,6 +125,7 @@ void omp_mat_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC){
     exit(-1);
   }
 
+  omp_set_num_threads(PROCESSOR_NUM);
   #pragma omp parallel shared (matrixA, matrixB, matrixC)\
     private (cycleI, cycleJ, cycleK)
   {
@@ -157,7 +173,6 @@ void omp_mat_mul_div(matrix matrixA, matrix matrixB, matrix matrixC){
   int num_per_thread = dim / PROCESSOR_NUM;
    
   // calculate the sum in parallel
-  //omp_set_num_threads(thread_num);
   #pragma omp parallel shared (matrixA, matrixB, matrixC, num_per_thread)\
     private (thread_id)
   {
@@ -185,6 +200,60 @@ void omp_mat_mul_div(matrix matrixA, matrix matrixB, matrix matrixC){
   }
 }
 
+/*
+ * tranpose matrixB so that it can be accessed in one row a time,
+ * just to utilize the cacheline
+ *
+ */
+void omp_mat_mul_transpose(matrix matrixA, matrix matrixB, matrix matrixC){
+  int dim = matrixA.xDim;
+  int thread_id = 0;
+  int num_per_thread = dim / PROCESSOR_NUM;
+   
+  matrix matrixBT;
+  init_matrix(&matrixBT, matrixB.xDim, matrixB.yDim, FALSE);
+
+  int cycleI = 0;
+  int cycleJ = 0;
+
+  for(cycleI = 0; cycleI < matrixB.yDim; ++ cycleI){
+    for(cycleJ = 0; cycleJ < matrixB.xDim; ++ cycleJ){
+      matrixBT.data[cycleJ * matrixB.xDim + cycleI] =
+        matrixB.data[cycleI * matrixB.xDim + cycleJ];
+    }
+  }
+
+  omp_set_num_threads(PROCESSOR_NUM);
+  //calculate the sum in parallel
+  #pragma omp parallel shared (matrixA, matrixBT, matrixC, num_per_thread)\
+    private (thread_id)
+  {
+    thread_id = omp_get_thread_num();
+    int start = num_per_thread * thread_id;
+    int end = start + num_per_thread;
+    //printf("TID: %d, %d - %d\n", thread_id, start, end);
+  
+    int cycleI = 0;
+    int cycleJ = 0;
+    int cycleK = 0;
+
+    for(cycleI = start; cycleI < end; ++ cycleI){
+      for(cycleJ = 0; cycleJ < matrixB.xDim; ++ cycleJ){
+        matrixC.data[cycleI * dim + cycleJ] = 0.0;
+
+        for(cycleK = 0; cycleK < dim; ++ cycleK){
+          matrixC.data[cycleI * dim + cycleJ] += 
+            matrixA.data[cycleI * matrixA.xDim + cycleK] *
+            //matrixB.data[cycleJ + cycleK * matrixB.xDim];
+            matrixBT.data[cycleJ * matrixBT.xDim + cycleK];
+        }
+
+      }
+    }
+  }
+  
+  SAFE_FREE(matrixBT.data);
+}
 
 void serial_mat_mul(matrix matrixA, matrix matrixB, matrix matrixC){
   int cycleI = 0;

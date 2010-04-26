@@ -6,8 +6,8 @@
  *
 */
 
-#define MATRIX_SIZE 256
-#define PROCESSOR_NUM 8
+#define MATRIX_SIZE 768
+#define PROCESSOR_NUM 32
 
 // macro
 #define TRUE 1
@@ -30,7 +30,9 @@ typedef struct _matrix{
 void init_matrix(matrix * mat, int xDim, int yDim, int random);
 
 void omp_mat_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC);
-void omp_mat_mul(matrix matrixA, matrix matrixB, matrix matrixC);
+void omp_mat_mul_div(matrix matrixA, matrix matrixB, matrix matrixC);
+void omp_mat_mul_transpose(matrix matrixA, matrix matrixB, matrix matrixC);
+
 void serial_mat_mul(matrix matrixA, matrix matrixB, matrix matrixC);
 
 double get_duration(struct timeval __start);

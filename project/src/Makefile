@@ -24,11 +24,11 @@ CFLAGS = -c -g -Wall -fopenmp $(INCLUDES)
 OUTPUT = results_mm.txt
 RUN = ./$(PROJECT)
 
-.c.o:
-	$(CC) $(CFLAGS) -c $<
-
 $(PROJECT) : $(OBJS)
 	$(CC) $(OBJS) $(LIBRARIES) -o $(PROJECT)
+
+mm.o : mm.c mm.h
+	$(CC) $(CFLAGS) mm.c
 
 all : $(PROJECT)
 
