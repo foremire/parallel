@@ -22,7 +22,7 @@ LIBRARIES = -L$(LIBPATH) $(LIBS)
 CC = cc
 CFLAGS = -c -g -Wall -fopenmp $(INCLUDES)
 OUTPUT = results_mm.txt
-RUN = ./$(PROJECT) 8 800
+RUN = ./$(PROJECT)
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<
