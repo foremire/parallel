@@ -57,16 +57,17 @@ int main( int argc, char *argv[] )
   //omp_mat_mul_div(matrixA, matrixB, matrixC);
   //omp_mat_mul_transpose(matrixA, matrixB, matrixC);
   //omp_mat_mul_transpose_sse(matrixA, matrixB, matrixC);
-  omp_mat_mul_transpose_sse_ppl(matrixA, matrixB, matrixC);
+  //omp_mat_mul_transpose_sse_ppl(matrixA, matrixB, matrixC);
+  omp_mat_mul_transpose_sse_ppl2(matrixA, matrixB, matrixC);
   t_omp = get_duration(__start);
 
   //sleep(2);
 
   // do it in serial way
-  //gettimeofday(&__start, NULL);
-  //serial_mat_mul(matrixA, matrixB, matrixCValid);
-  //t_serial = get_duration(__start);
-  t_serial = SERIAL_TIME;
+  gettimeofday(&__start, NULL);
+  serial_mat_mul(matrixA, matrixB, matrixCValid);
+  t_serial = get_duration(__start);
+  //t_serial = SERIAL_TIME;
  
   // report the result
   //report_result();
@@ -75,7 +76,7 @@ int main( int argc, char *argv[] )
   printf("Speed Up:%3.6f\n", t_serial/t_omp);
   
   // validate the result
-  //validate_result(matrixC, matrixCValid);
+  validate_result(matrixC, matrixCValid);
 
   SAFE_FREE(matrixA.data);
   SAFE_FREE(matrixB.data);
@@ -472,14 +473,17 @@ void omp_mat_mul_transpose_sse_ppl2(matrix matrixA, matrix matrixB, matrix matri
     int cycleJ = 0;
     int cycleK = 0;
 
+    // accumulator register
     v4sf acc_0;
     v4sf acc_1;
-    
-    v4sf oprand_a_0;
-    v4sf oprand_a_1;
 
+    // group 0
+    v4sf oprand_a_0;
     v4sf oprand_b_0_0;
     v4sf oprand_b_0_1;
+
+    // group 1
+    v4sf oprand_a_1;
     v4sf oprand_b_1_0;
     v4sf oprand_b_1_1;
 
@@ -489,11 +493,12 @@ void omp_mat_mul_transpose_sse_ppl2(matrix matrixA, matrix matrixB, matrix matri
     int is_odd = 0;
 
     for(cycleI = start; cycleI < end; ++ cycleI){
-      for(cycleJ = 0; cycleJ < matrixB.xDim - 3; cycleJ += 4){
+      for(cycleJ = 0; cycleJ < matrixB.xDim - 1; cycleJ += 2){
         // set acc to 0
         acc_0 = __builtin_ia32_loadups(init_array);
         acc_1 = __builtin_ia32_loadups(init_array);
-        
+    
+        // prefetch the data for the first run
         oprand_a_0 = __builtin_ia32_loadups(
           &(matrixA.data[cycleI * dim]));
         oprand_b_0_0 = __builtin_ia32_loadups(
@@ -501,12 +506,12 @@ void omp_mat_mul_transpose_sse_ppl2(matrix matrixA, matrix matrixB, matrix matri
         oprand_b_0_1 = __builtin_ia32_loadups(
           &(matrixBT.data[(cycleJ + 1) * dim]));
 
-        for(cycleK = 4; cycleK < (dim - SSE_LENGTH + 1); cycleK += SSE_LENGTH){
+        for(cycleK = SSE_LENGTH; cycleK < (dim - SSE_LENGTH + 1); cycleK += SSE_LENGTH){
           is_odd = cycleK / 4;
           is_odd = is_odd % 2;
             
-          // load the data for the next run
           if(is_odd){
+            // prefetch the data for the next run
             oprand_a_1 = __builtin_ia32_loadups(
               &(matrixA.data[cycleI * dim + cycleK]));
             oprand_b_1_0 = __builtin_ia32_loadups(
@@ -514,11 +519,13 @@ void omp_mat_mul_transpose_sse_ppl2(matrix matrixA, matrix matrixB, matrix matri
             oprand_b_1_1 = __builtin_ia32_loadups(
               &(matrixBT.data[(cycleJ + 1) * dim + cycleK]));
 
+            // calculate the sum for the current run
             acc_0 = __builtin_ia32_addps(acc_0,
                 __builtin_ia32_mulps(oprand_a_0, oprand_b_0_0));
             acc_1 = __builtin_ia32_addps(acc_1, 
-                __builtin_ia32_mulps(oprand_a_1, oprand_b_0_1));
+                __builtin_ia32_mulps(oprand_a_0, oprand_b_0_1));
           }else{
+            // prefetch the data for the next run
             oprand_a_0 = __builtin_ia32_loadups(
               &(matrixA.data[cycleI * dim + cycleK]));
             oprand_b_0_0 = __builtin_ia32_loadups(
@@ -526,13 +533,27 @@ void omp_mat_mul_transpose_sse_ppl2(matrix matrixA, matrix matrixB, matrix matri
             oprand_b_0_1 = __builtin_ia32_loadups(
               &(matrixBT.data[(cycleJ + 1) * dim + cycleK]));
 
+            // calculate the sum for the current run
             acc_0 = __builtin_ia32_addps(acc_0,
-                __builtin_ia32_mulps(oprand_a_0, oprand_b_1_0));
+                __builtin_ia32_mulps(oprand_a_1, oprand_b_1_0));
             acc_1 = __builtin_ia32_addps(acc_1, 
                 __builtin_ia32_mulps(oprand_a_1, oprand_b_1_1));
           }
-          
         }
+            
+        // calculate the sum for the last run
+        if(!is_odd){
+          acc_0 = __builtin_ia32_addps(acc_0,
+            __builtin_ia32_mulps(oprand_a_0, oprand_b_0_0));
+          acc_1 = __builtin_ia32_addps(acc_1, 
+            __builtin_ia32_mulps(oprand_a_0, oprand_b_0_1));
+        }else{
+          acc_0 = __builtin_ia32_addps(acc_0,
+            __builtin_ia32_mulps(oprand_a_1, oprand_b_1_0));
+          acc_1 = __builtin_ia32_addps(acc_1, 
+            __builtin_ia32_mulps(oprand_a_1, oprand_b_1_1));
+        }
+
         __builtin_ia32_storeups(imd_ret_0, acc_0);
         __builtin_ia32_storeups(imd_ret_1, acc_1);
 
