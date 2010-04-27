@@ -6,8 +6,9 @@
  *
 */
 
-#define MATRIX_SIZE 768
+#define MATRIX_SIZE 1024
 #define PROCESSOR_NUM 32
+#define SERIAL_TIME 19.0
 
 // macro
 #define TRUE 1
