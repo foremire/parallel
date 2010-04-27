@@ -7,12 +7,13 @@ typedef float ftype;
 // vector of four single floats
 typedef float v4sf __attribute__ ((vector_size(16))); 
 
-#define VECTOR_LENGTH 120
+#define VECTOR_LENGTH 1200
 #define SSE_LENGTH 4
-#define RUN_TIME 5000000
+#define RUN_TIME 10000
 
 double get_duration(struct timeval __start);
 
+#define CORRECT_THRESHOLD 0.0001
 
 int main()
 {
@@ -33,19 +34,25 @@ int main()
   gettimeofday(&tv, NULL);
   srand(tv.tv_sec * tv.tv_usec);
   
-  int i = 0;
-  for(i = 0; i < VECTOR_LENGTH; ++i){
-    vec_a[i] = (ftype)rand() / ((ftype)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
-    vec_b[i] = (ftype)rand() / ((ftype)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
-  }
  
   v4sf acc;
   v4sf oprand_a;
   v4sf oprand_b;
 
   int j = 0;
+
+  int match = 0;
+  int miss = 0;
+
   gettimeofday(&tv, NULL);
   for(j = 0; j < RUN_TIME; ++j){
+  
+    int i = 0;
+    for(i = 0; i < VECTOR_LENGTH; ++i){
+      vec_a[i] = (ftype)rand() / ((ftype)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
+      vec_b[i] = (ftype)rand() / ((ftype)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
+    }
+
     acc = __builtin_ia32_xorps(acc, acc);
     for(i = 0; i < (VECTOR_LENGTH - SSE_LENGTH + 1); i += SSE_LENGTH){
       oprand_a = __builtin_ia32_loadups(&vec_a[i]);
@@ -59,21 +66,30 @@ int main()
     for(i = 0; i < SSE_LENGTH; ++i){
       sse_ret += imd_ret[i];
     }
+    
+    nor_ret = 0;
+    for(i = 0; i < VECTOR_LENGTH; ++i){
+      nor_ret += vec_a[i] * vec_b[i];
+    }
+
+    if(nor_ret - sse_ret < CORRECT_THRESHOLD){
+      ++ match;
+    }else{
+      ++ miss;
+      printf("miss: %3.8f, %3.8f\n", sse_ret, nor_ret);
+    }
   }
   sse_time = get_duration(tv);
 
   gettimeofday(&tv, NULL);
   for(j = 0; j < RUN_TIME; ++j){
-    nor_ret = 0;
-    for(i = 0; i < VECTOR_LENGTH; ++i){
-      nor_ret += vec_a[i] * vec_b[i];
-    }
   }
   nor_time = get_duration(tv);
 
-  printf("SSE: %3.4f, NORMAL: %3.4f\n", sse_ret, nor_ret);
-  printf("SSE Time: %3.4f, NORMAL Time: %3.4f\n", sse_time, nor_time);
-  printf("Speed Up: %3.4f\n", nor_time / sse_time);
+  //printf("SSE: %3.4f, NORMAL: %3.4f\n", sse_ret, nor_ret);
+  //printf("SSE Time: %3.4f, NORMAL Time: %3.4f\n", sse_time, nor_time);
+  //printf("Speed Up: %3.4f\n", nor_time / sse_time);
+  printf("%d runs, %d match, %d miss\n", RUN_TIME, match, miss);
   return 0;
 }
 

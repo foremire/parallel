@@ -7,7 +7,7 @@
 */
 
 #define MATRIX_SIZE 768
-#define PROCESSOR_NUM 1
+#define PROCESSOR_NUM 8
 
 // macro
 #define TRUE 1
@@ -31,6 +31,8 @@ typedef struct _matrix{
 // SSE
 typedef float v4sf __attribute__ ((vector_size(16)));
 #define SSE_LENGTH 4
+
+#define CORRECT_THRESHOLD 0.0001
 
 // function declaration
 void init_matrix(matrix * mat, int xDim, int yDim, int random);

@@ -316,14 +316,16 @@ void omp_mat_mul_transpose_sse(matrix matrixA, matrix matrixB, matrix matrixC){
         for(cycleK = 1; cycleK < SSE_LENGTH; ++ cycleK){
           imd_ret[0] += imd_ret[cycleK];
         }
+        matrixC.data[cycleI * dim + cycleJ] = imd_ret[0];
 
+        /*
         float nor_ret = 0.0f;
         for(cycleK = 0; cycleK < dim; ++ cycleK){
           nor_ret += matrixA.data[cycleI * dim + cycleK] *
             matrixBT.data[cycleJ * dim + cycleK];
         }
-        //matrixC.data[cycleI * dim + cycleJ] = imd_ret[0];
-        matrixC.data[cycleI * dim + cycleJ] = nor_ret;
+        //matrixC.data[cycleI * dim + cycleJ] = nor_ret;
+        */
       }
     }
   }
@@ -406,8 +408,8 @@ void validate_result(matrix matrixA, matrix matrixB){
   
   for(cycleI = 0; cycleI < matrixA.yDim; ++ cycleI){
     for(cycleJ = 0; cycleJ < matrixA.xDim; ++ cycleJ){
-      if(matrixA.data[cycleI * matrixA.xDim + cycleJ] != 
-          matrixB.data[cycleI * matrixA.xDim + cycleJ]){
+      if(matrixA.data[cycleI * matrixA.xDim + cycleJ] -
+          matrixB.data[cycleI * matrixA.xDim + cycleJ] > CORRECT_THRESHOLD){
         ++ mismatch;
       }else{
         ++ match;
