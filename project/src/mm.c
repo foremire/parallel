@@ -53,7 +53,8 @@ int main( int argc, char *argv[] )
   gettimeofday(&__start, NULL);
   //omp_mat_mul_baseline(matrixA, matrixB, matrixC);
   //omp_mat_mul_div(matrixA, matrixB, matrixC);
-  omp_mat_mul_transpose(matrixA, matrixB, matrixC);
+  //omp_mat_mul_transpose(matrixA, matrixB, matrixC);
+  omp_mat_mul_transpose_sse(matrixA, matrixB, matrixC);
   t_omp = get_duration(__start);
 
   //sleep(2);
@@ -111,8 +112,8 @@ void init_matrix(matrix * mat, int xDim, int yDim, int random){
     }
   }
 }
+
 void omp_mat_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC){
-  
   int cycleI = 0;
   int cycleJ = 0;
   int cycleK = 0;
@@ -248,6 +249,81 @@ void omp_mat_mul_transpose(matrix matrixA, matrix matrixB, matrix matrixC){
             matrixBT.data[cycleJ * matrixBT.xDim + cycleK];
         }
 
+      }
+    }
+  }
+  
+  SAFE_FREE(matrixBT.data);
+}
+
+
+
+/*
+ * use both transpose and SSE
+ *
+ */
+void omp_mat_mul_transpose_sse(matrix matrixA, matrix matrixB, matrix matrixC){
+  int dim = matrixA.xDim;
+  int thread_id = 0;
+  int num_per_thread = dim / PROCESSOR_NUM;
+   
+  matrix matrixBT;
+  init_matrix(&matrixBT, matrixB.xDim, matrixB.yDim, FALSE);
+
+  int cycleI = 0;
+  int cycleJ = 0;
+
+  for(cycleI = 0; cycleI < matrixB.yDim; ++ cycleI){
+    for(cycleJ = 0; cycleJ < matrixB.xDim; ++ cycleJ){
+      matrixBT.data[cycleJ * matrixB.xDim + cycleI] =
+        matrixB.data[cycleI * matrixB.xDim + cycleJ];
+    }
+  }
+
+  omp_set_num_threads(PROCESSOR_NUM);
+  //calculate the sum in parallel
+  #pragma omp parallel shared (matrixA, matrixBT, matrixC, num_per_thread)\
+    private (thread_id)
+  {
+    thread_id = omp_get_thread_num();
+    int start = num_per_thread * thread_id;
+    int end = start + num_per_thread;
+    printf("TID: %d, %d - %d\n", thread_id, start, end);
+  
+    int cycleI = 0;
+    int cycleJ = 0;
+    int cycleK = 0;
+
+    v4sf acc;
+    v4sf oprand_a;
+    v4sf oprand_b;
+    ftype imd_ret[SSE_LENGTH];
+
+    for(cycleI = start; cycleI < end; ++ cycleI){
+      for(cycleJ = 0; cycleJ < matrixB.xDim; ++ cycleJ){
+        // set acc to 0
+        acc = __builtin_ia32_xorps(acc, acc);
+        
+        for(cycleK = 0; cycleK < (dim - SSE_LENGTH + 1); cycleK += SSE_LENGTH){
+          oprand_a = __builtin_ia32_loadups(
+            &(matrixA.data[cycleI * dim + cycleK]));
+          oprand_b = __builtin_ia32_loadups(
+            &(matrixBT.data[cycleJ * dim + cycleK]));
+          acc = __builtin_ia32_addps(acc, __builtin_ia32_mulps(oprand_a, oprand_b));
+        }
+        __builtin_ia32_storeups(imd_ret, acc);
+
+        for(cycleK = 1; cycleK < SSE_LENGTH; ++ cycleK){
+          imd_ret[0] += imd_ret[cycleK];
+        }
+
+        float nor_ret = 0.0f;
+        for(cycleK = 0; cycleK < dim; ++ cycleK){
+          nor_ret += matrixA.data[cycleI * dim + cycleK] *
+            matrixBT.data[cycleJ * dim + cycleK];
+        }
+        //matrixC.data[cycleI * dim + cycleJ] = imd_ret[0];
+        matrixC.data[cycleI * dim + cycleJ] = nor_ret;
       }
     }
   }
