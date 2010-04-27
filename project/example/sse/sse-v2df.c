@@ -2,13 +2,11 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-
-typedef float ftype;
 // vector of four single floats
-typedef float v4sf __attribute__ ((vector_size(16))); 
+typedef double v2df __attribute__ ((vector_size(16))); 
 
 #define VECTOR_LENGTH 120
-#define SSE_LENGTH 4
+#define SSE_LENGTH 2
 #define RUN_TIME 5000000
 
 double get_duration(struct timeval __start);
@@ -16,13 +14,13 @@ double get_duration(struct timeval __start);
 
 int main()
 {
-  ftype vec_a[VECTOR_LENGTH];
-  ftype vec_b[VECTOR_LENGTH];
+  double vec_a[VECTOR_LENGTH];
+  double vec_b[VECTOR_LENGTH];
 
-  ftype imd_ret[SSE_LENGTH];
+  double imd_ret[SSE_LENGTH];
 
-  ftype sse_ret = 0.0f;
-  ftype nor_ret = 0.0f;
+  double sse_ret = 0.0f;
+  double nor_ret = 0.0f;
 
   double sse_time = 0.0f;
   double nor_time = 0.0f;
@@ -35,25 +33,25 @@ int main()
   
   int i = 0;
   for(i = 0; i < VECTOR_LENGTH; ++i){
-    vec_a[i] = (ftype)rand() / ((ftype)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
-    vec_b[i] = (ftype)rand() / ((ftype)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
+    vec_a[i] = (double)rand() / ((double)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
+    vec_b[i] = (double)rand() / ((double)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
   }
  
-  v4sf acc;
-  v4sf oprand_a;
-  v4sf oprand_b;
+  v2df acc;
+  v2df oprand_a;
+  v2df oprand_b;
 
   int j = 0;
   gettimeofday(&tv, NULL);
   for(j = 0; j < RUN_TIME; ++j){
-    acc = __builtin_ia32_xorps(acc, acc);
+    acc = __builtin_ia32_xorpd(acc, acc);
     for(i = 0; i < (VECTOR_LENGTH - SSE_LENGTH + 1); i += SSE_LENGTH){
-      oprand_a = __builtin_ia32_loadups(&vec_a[i]);
-      oprand_b = __builtin_ia32_loadups(&vec_b[i]);
-      acc = __builtin_ia32_addps(acc, __builtin_ia32_mulps(oprand_a, oprand_b));
+      oprand_a = __builtin_ia32_loadupd(&vec_a[i]);
+      oprand_b = __builtin_ia32_loadupd(&vec_b[i]);
+      acc = __builtin_ia32_addpd(acc, __builtin_ia32_mulpd(oprand_a, oprand_b));
     }
 
-    __builtin_ia32_storeups(imd_ret, acc);
+    __builtin_ia32_storeupd(imd_ret, acc);
 
     sse_ret = 0.0f;
     for(i = 0; i < SSE_LENGTH; ++i){
