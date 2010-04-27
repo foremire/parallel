@@ -43,6 +43,7 @@ void omp_mat_mul_div(matrix matrixA, matrix matrixB, matrix matrixC);
 void omp_mat_mul_transpose(matrix matrixA, matrix matrixB, matrix matrixC);
 void omp_mat_mul_transpose_sse(matrix matrixA, matrix matrixB, matrix matrixC);
 void omp_mat_mul_transpose_sse_ppl(matrix matrixA, matrix matrixB, matrix matrixC);
+void omp_mat_mul_transpose_sse_ppl2(matrix matrixA, matrix matrixB, matrix matrixC);
 
 void serial_mat_mul(matrix matrixA, matrix matrixB, matrix matrixC);
 
