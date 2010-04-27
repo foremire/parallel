@@ -288,7 +288,7 @@ void omp_mat_mul_transpose_sse(matrix matrixA, matrix matrixB, matrix matrixC){
     thread_id = omp_get_thread_num();
     int start = num_per_thread * thread_id;
     int end = start + num_per_thread;
-    printf("TID: %d, %d - %d\n", thread_id, start, end);
+    //printf("TID: %d, %d - %d\n", thread_id, start, end);
   
     int cycleI = 0;
     int cycleJ = 0;
@@ -317,15 +317,6 @@ void omp_mat_mul_transpose_sse(matrix matrixA, matrix matrixB, matrix matrixC){
           imd_ret[0] += imd_ret[cycleK];
         }
         matrixC.data[cycleI * dim + cycleJ] = imd_ret[0];
-
-        /*
-        float nor_ret = 0.0f;
-        for(cycleK = 0; cycleK < dim; ++ cycleK){
-          nor_ret += matrixA.data[cycleI * dim + cycleK] *
-            matrixBT.data[cycleJ * dim + cycleK];
-        }
-        //matrixC.data[cycleI * dim + cycleJ] = nor_ret;
-        */
       }
     }
   }

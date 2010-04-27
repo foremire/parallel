@@ -7,7 +7,7 @@
 */
 
 #define MATRIX_SIZE 768
-#define PROCESSOR_NUM 8
+#define PROCESSOR_NUM 32
 
 // macro
 #define TRUE 1
