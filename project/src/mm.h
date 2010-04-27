@@ -19,9 +19,11 @@
     addr = NULL;\
   }
 
+typedef float ftype;
+
 //global varialbes and definitions
 typedef struct _matrix{
-  double * data;
+  ftype * data;
   int xDim;
   int yDim;
 }matrix;

@@ -88,12 +88,12 @@ void init_matrix(matrix * mat, int xDim, int yDim, int random){
 
   size = xDim * yDim;
 
-  mat->data = malloc(size * sizeof(double));
+  mat->data = malloc(size * sizeof(ftype));
   if(NULL == mat->data){
     puts(malloc_error);
     exit(-1);
   }
-  memset(mat->data, 0, size * sizeof(double));
+  memset(mat->data, 0, size * sizeof(ftype));
   mat->xDim = xDim;
   mat->yDim = yDim;
 
@@ -106,7 +106,7 @@ void init_matrix(matrix * mat, int xDim, int yDim, int random){
     for(cycleI = 0; cycleI < mat->yDim; ++ cycleI){
       for(cycleJ = 0; cycleJ < mat->xDim; ++ cycleJ){
         mat->data[cycleI * mat->xDim + cycleJ] = 
-          (double)rand() / ((double)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
+          (ftype)rand() / ((ftype)(RAND_MAX)+ 1.00) * 2.0 - 1.0;
       }
     }
   }
