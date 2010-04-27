@@ -5,7 +5,7 @@
 // vector of four single floats
 typedef double v2df __attribute__ ((vector_size(16))); 
 
-#define VECTOR_LENGTH 12
+#define VECTOR_LENGTH 120
 #define SSE_LENGTH 2
 
 int main()
