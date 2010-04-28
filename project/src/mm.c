@@ -65,7 +65,7 @@ int main( int argc, char *argv[] )
 
   // do it in serial way
   gettimeofday(&__start, NULL);
-  //serial_mat_mul(matrixA, matrixB, matrixCValid);
+  serial_mat_mul(matrixA, matrixB, matrixCValid);
   t_serial = get_duration(__start);
   //t_serial = SERIAL_TIME;
  
@@ -76,7 +76,7 @@ int main( int argc, char *argv[] )
   printf("Speed Up:%3.6f\n", t_serial/t_omp);
   
   // validate the result
-  //validate_result(matrixC, matrixCValid);
+  validate_result(matrixC, matrixCValid);
 
   SAFE_FREE(matrixA.data);
   SAFE_FREE(matrixB.data);
@@ -118,6 +118,10 @@ void init_matrix(matrix * mat, int xDim, int yDim, int random){
   }
 }
 
+/*
+ * Baseline version
+ * *
+ */
 void omp_mat_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC){
   int cycleI = 0;
   int cycleJ = 0;
@@ -173,6 +177,10 @@ void omp_mat_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC){
   PAPI_destroy_eventset(&parallel_event_set);
 }
 
+/*
+ * Baseline version 2
+ * 
+ */
 void omp_mat_mul_div(matrix matrixA, matrix matrixB, matrix matrixC){
   int dim = matrixA.xDim;
   int thread_id = 0;
