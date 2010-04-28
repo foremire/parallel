@@ -75,6 +75,63 @@ ENDDO
 	\end{center}
 \end{figure}
 
+\section{SSE}
+Streaming SIMD Extension (SSE) is a SIMD instruction set 
+introduced by Intel, begin in Pentium III product line. 
+\footnote{http://en.wikipedia.org/wiki/Streaming\_SIMD\_Extensions}
+It adds eight new 128-bit registers to the CPU, known as XMM0 
+through XMM7. On Intel 64 platform, in which the experiment is 
+conducted, the registered have been extended from XMM0 to XMM15.
+Each register can hold 128 bit data, e.g. four 32-bit single-precision
+floating point numbers, or two 64-bit double-precision floating point
+numbers. Specific floating operation instructions can be issued in a
+separate FPU and they can operation on the whole 128-bit register.
+With the help of SSE, the floating operation instructions can be
+executed in parallel with other instructions which may lead great 
+performance boost in pipelining. 
+
+GCC has built-in support for SSE, and all the SSE instructions
+are encapsulated in built-in functions started with 
+\texttt{\_\_builtin\_ia32}. The code snippet is shown as below:
+
+\begin{verbatim}
+// SSE
+typedef float v4sf __attribute__ ((vector_size(16)));
+#define SSE_LENGTH 4
+
+v4sf acc;
+v4sf oprand_a;
+v4sf oprand_b;
+ftype imd_ret[SSE_LENGTH];
+
+for(cycleI = start; cycleI < end; ++ cycleI){
+  for(cycleJ = 0; cycleJ < matrixB.xDim; ++ cycleJ){
+  // set acc to 0
+  acc = __builtin_ia32_loadups(init_array);
+        
+  for(cycleK = 0; cycleK < (dim - SSE_LENGTH + 1); cycleK += SSE_LENGTH){
+    oprand_a = __builtin_ia32_loadups(&(matrixA.data[cycleI * dim + cycleK]));
+    oprand_b = __builtin_ia32_loadups(&(matrixBT.data[cycleJ * dim + cycleK]));
+    acc = __builtin_ia32_addps(acc, __builtin_ia32_mulps(oprand_a, oprand_b));
+  }
+  __builtin_ia32_storeups(imd_ret, acc);
+
+  for(cycleK = 1; cycleK < SSE_LENGTH; ++ cycleK){
+    imd_ret[0] += imd_ret[cycleK];
+  }
+  matrixC.data[cycleI * dim + cycleJ] = imd_ret[0];
+}
+\end{verbatim}
+
+\texttt{v4sf} is defined as vector type which is composed of 4 single-precision
+floating point numbers and it is stored in XMM registers. 
+\texttt{\_\_builtin\_ia32\_loadups} is used to load data from main memory to 
+XMM registers, and \texttt{\_\_builtin\_ia32\_storeups} are used to store the 
+data from XMM registers to main memory. \texttt{\_\_builtin\_ia32\_addps} and 
+\texttt{\_\_builtin\_ia32\_mulps} is used for XMM add and multiply operation 
+respectively. Since each operation can manipulate 4 float numbers a time, the 
+stride of the inner most loop is set to 4.
+
 \end{document}
 
 \begin{comment}
