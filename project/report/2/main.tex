@@ -90,9 +90,10 @@ With the help of SSE, the floating operation instructions can be
 executed in parallel with other instructions which may lead great 
 performance boost in pipelining. 
 
-GCC has built-in support for SSE, and all the SSE instructions
-are encapsulated in built-in functions started with 
-\texttt{\_\_builtin\_ia32}. The code snippet is shown as below:
+GCC has built-in support for SSE, 
+\footnote{http://gcc.gnu.org/onlinedocs/gcc-4.4.1/gcc/X86-Built\_002din-Functions.html} 
+and all the SSE instructions are encapsulated in built-in functions with 
+prefix \texttt{\_\_builtin\_ia32}. The code snippet is shown as below:
 
 \footnotesize
 \begin{verbatim}
@@ -128,9 +129,9 @@ for(cycleI = start; cycleI < end; ++ cycleI){
 \texttt{v4sf} is defined as vector type which is composed of 4 single-precision
 floating point numbers and it is stored in XMM registers. 
 \texttt{\_\_builtin\_ia32\_loadups} is used to load data from main memory to 
-XMM registers, and \texttt{\_\_builtin\_ia32\_storeups} are used to store the 
+XMM registers, and \texttt{\_\_builtin\_ia32\_storeups} is used to store the 
 data from XMM registers to main memory. \texttt{\_\_builtin\_ia32\_addps} and 
-\texttt{\_\_builtin\_ia32\_mulps} is used for XMM add and multiply operation 
+\texttt{\_\_builtin\_ia32\_mulps} are used to do XMM add and multiply operation 
 respectively. Since each operation can manipulate 4 float numbers a time, the 
 stride of the inner most loop is set to 4.
 
@@ -167,13 +168,10 @@ int is_odd = 0;
 
 for(cycleI = start; cycleI < end; ++ cycleI){
   for(cycleJ = 0; cycleJ < matrixB.xDim - 1; cycleJ += 2){
-
     for(cycleK = SSE_LENGTH; cycleK < (dim - SSE_LENGTH + 1); 
       cycleK += SSE_LENGTH){
-      
       is_odd = cycleK / 4;
       is_odd = is_odd % 2;
-        
       if(is_odd){
         prefetch data of group 1 for the next run;
         do accumulation on group 0;
@@ -181,8 +179,7 @@ for(cycleI = start; cycleI < end; ++ cycleI){
         prefetch data of group 0 for the next run;
         do accumulation on group 1;
       }
-    }
-        
+    }   
     // calculate the sum for the last run
     if(!is_odd){
     	  do accumulation on group 0;
@@ -196,12 +193,94 @@ for(cycleI = start; cycleI < end; ++ cycleI){
 \normalsize
 
 We prepared 2 group of registers. In the loop iteration, we load data 
-into one group of registers and do calculation on the other group so that
-the data loading latency can be hiden by pipelining.
+into one group of registers and do calculation on the other group so 
+that the data loading latency can be hidden by pipelining.
 
 \section{Experiment Results}
-We apply different optimization methods step by step and the experiment setup 
+\subsection{Experiment Setup}
+The matrix size is $1024\times 1024$ in float numbers and number of 
+threads is 32. We apply different optimization methods step by step, 
+and new optimization method is combined with the previous one. Since 
+it's limited by the space, we assign different method combinations to 
+different IDs, shown in Table~\ref{tab:methods}.
 
+\begin{table}[h!]
+	\small
+	\begin{center}
+	\caption{\label{tab:methods} Method Combinations ID Map}
+	\begin{tabular}{|r|l|}
+		\hline
+		ID & Method Combination \\ \hline
+		0 &	Serial \\ \hline
+		1 & Baseline \\ \hline
+    2 & Transpose \\ \hline
+    3 & Transpose + SSE \\ \hline
+    4 & Transpose + SSE + Unrolling (4 cycles) + Scheduling \\ \hline
+    5 & Transpose + SSE + Unrolling (2 cycles) + Scheduling + 
+      Software pipelining \\ \hline
+	\end{tabular}
+	\end{center}
+\end{table}
+
+\subsection{Results}
+To explore the performances under different optimization settings by 
+the compiler, we run the experiments in two groups: one with \texttt{-O3}
+option and the other without any optimization. For each setup, we 
+run the program 20 times and calculate the average run time as the 
+measurement of performance. \footnote{Currently we have run into some
+problem about applying PAPI with OpenMP, as PAPI can not work correctly
+under OpenMP. We will try to fix it and use PAPI to measure the 
+performance with more details in the next report.} The results are shown
+in Table~\ref{tab:performance}.
+
+\begin{table}[h!]
+	\small
+	\begin{center}
+	\caption{\label{tab:performance} Entity Recall for each topic query 
+	based on Entity Name}
+	\begin{tabular}{|r|r|r|r|r|}
+		\hline
+		 & \multicolumn{2}{c|}{NO Optimization} & \multicolumn{2}{c|}{-O3 Optimization} \\ \hline
+		Method & Time(s) & Speed Up & Time(s) & Speed Up \\ \hline
+		0  &  33.7776	& 1.0000		&19.4682		&	1.0000 \\ \hline
+		1  &		4.5976		&	7.3468		& 2.3256		&	8.3712 \\ \hline
+		2  &		4.1109  & 8.2166		&	0.4622		&	42.1209 \\ \hline
+		3  &		0.9353  & 36.1142	&	0.4656		&	41.8133 \\ \hline
+		4  &		0.6091  & \textbf{55.4550}	& 0.4208		&	\textbf {46.2649} \\ \hline
+		5  &		0.7761  & 43.5223	&	0.4660		&	41.7774 \\ \hline
+	\end{tabular}
+	\end{center}
+\end{table}
+
+\subsection{Analysis}
+Based on the observations in the results, we can draw the following interesting 
+conclusions:
+\begin{enumerate}
+\item Transpose can improve the performance, but not too much;
+\item SSE can boost the performance greatly, about $4\times$ faster.
+\item Unrolling and Scheduling can improve the performance further, about 50\% faster;
+\item Software pipelining can not improve the performance in the current setup. 
+Comparing the setup of method 4 and method 5, we can find that this is mainly due to
+the limitation of available XMM registers. In method 4, we can unroll 4 cycles, while
+in method 5 we can unroll 2 cycles because we need two groups of registers to 
+interweave load and calculation operations. This is the tradeoff of unrolling and
+software pipelining.
+\item When -O3 option is turned on, there differences between methods with SSE 
+applied are very small, since the complier has done a lot of work to do unrolling,
+scheduling and software pipelining, etc.
+\item Our current best performance (Method 4) without any optimization has reached 
+the 60\% of the best performance with -O3 optimization.
+\end{enumerate}
+
+\section{Conclusion}
+Currently we have tried four different optimization methods in this experiment, 
+and results showed that our performance has been improved a lot and reach the 
+near limit of the ideal best performance. The best setup can run $55\times$ 
+faster that the serial version. Also, the performance of best setup is
+approaching the ideal limit.
+
+In the following days, we will apply some other methods to do the final try
+to reach the optimization peak.
 
 \end{document}
 
