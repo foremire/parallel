@@ -1,0 +1,32 @@
+Matrix Size: 1024 x 1024
+Thread number 32
+
+Method Name
+1. baseline
+2. transpose
+3. transpose + SSE
+4. transpose + SSE + unrolling (4 cycles) + scheduling
+5. transpose + SSE + unrolling (2 cycles, limited by available XMM register) + scheduling + software pipelining
+
+without any optimization
+
+Serial Time : 33.777665
+Method   |  Time    |      SpeedUp
+1           4.5976         7.3468
+2           4.1109         8.2166
+3           0.9353         36.1142
+4           0.6091         55.4550
+5           0.7761         43.5223     (8 threads: 1.1290)
+
+with -O3 option
+
+Serial Time: 19.468285
+Method   |  Time    |      SpeedUp
+1           2.3256         8.3712
+2           0.4622         42.1209
+3           0.4656         41.8133
+4           0.4208         46.2649
+5           0.4660         41.7774
+
+Further Work:
+1. Loop Tiling: http://en.wikipedia.org/wiki/Loop_tiling
