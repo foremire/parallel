@@ -19,76 +19,67 @@ asmloop:
 # prefixes: l for 4 bytes, q for 8 bytes.
 ..B1.1:                         # Preds ..B1.0
 ..___tag_value_asmloop.1:                                       #52.1
-        
-        
-        ############### The outermost loop #############
-        movl  $0, %r14d  # i = 0
-        # The tag for the jump
+  #initialization
+  sub $1, %esi
+  movl $0, %r14d  # i = 0
+
+  ############### The outermost loop #############
 ..Branch.i:
+    ############# The inner loop ##################
+    #Initialize j to 1
+    movl $1, %r15d
 		
-		############# The inner loop ##################
-		#Initialize j to 1
-		movl $1, %r15d
-		
-		#Initialize a[ j ] to a[ 1 ]:
-                leaq 8(%rdi), %r13
-		
-		#The tag for the jump
+    #Initialize a[ j ] to a[ 1 ]:
+    leaq 8(%rdi), %r13
 ..Branch.j:
+      ############# Code inside the loops ############
+      #for ( i = 0; i < t; i++ )
+      #{
+      #  for ( j = 1; j < N-1; j++ )
+      #  {
+      #    a[ j ] = ( a[ j - 1 ] + a[ j ] + j ) * 0.43;
+      #  }
+      #}
+      
+      # Add the values into %r9
+      movq 0(%r13), %xmm0
+      movq -8(%r13), %xmm1
+		
+      #xmm0 contains ( a[j] + a[j-1] )
+      addsd %xmm1, %xmm0
+		
+      # Add j: First it has to ve converted to double
+      cvtsi2sd %r15, %xmm1
+      #xmm0 contains ( a[j] + a[j-1] + (double) j )
+      addsd %xmm1, %xmm0
+		
+      #Multiply by 0.43: Multiplication happens from xmm
+      movq 8(%rcx), %xmm1
 
-		############# Code inside the loops ############
-		#for ( i = 0; i < t; i++ )
-		#{
-		#	for ( j = 1; j < N-1; j++ )
-		#	{
-		#		a[ j ] = ( a[ j - 1 ] + a[ j ] + j ) * 0.43;
-		#	}
-		#}
+      #xmm0 contains ( a[j] + a[j-1] + (double) j ) * 0.43
+      mulsd %xmm1, %xmm0
 		
-		# Add the values into %r9
-		movq 0(%r13), %xmm0
-		movq -8(%r13), %xmm1
+      #Store the result
+      movsd %xmm0, 0(%r13)
 		
-                #xmm0 contains ( a[j] + a[j-1] )
-		addsd %xmm1, %xmm0
+      # Get &a[ j + 1 ], that will be used in the next iteration.
+      addq $8, %r13
 		
-		# Add j: First it has to ve converted to double
-		cvtsi2sd %r15, %xmm1
-		#xmm0 contains ( a[j] + a[j-1] + (double) j )
-		addsd %xmm1, %xmm0
-		
-		#Multiply by 0.43: Multiplication happens from xmm
-		movq 8(%rcx), %xmm1
+      ############## End code inside loops ###########
+      # Branch for j if needed
+      incl %r15d
+      cmpl %r15d, %esi
+      jne ..Branch.j
 
-		#xmm0 contains ( a[j] + a[j-1] + (double) j ) * 0.43
-		mulsd %xmm1, %xmm0
-		
-		#Store the result
-		movsd %xmm0, 0(%r13)
-		
-		# Get &a[ j + 1 ], that will be used in the next iteration.
-		addq $8, %r13
-		
-		############## End code inside loops ###########
-		
-		# Increment j
-		incl %r15d
-		
-		# Branch for j if needed
-		cmpl %r15d, %esi
-		movq %r15, %rax
-		jne ..Branch.j
+    # See if a branch is required
+    incl %r14d
+    cmpl %r14d, %edx
+    jne ..Branch.i
 
-		# Increment i
-		incl %r14d
-		#See if a branch is required
-		cmpl %r14d, %edx
-		# Branch
-		jne ..Branch.i
-
-		################ Return ############################		        
-        ret                                                     #59.7
-        .align    16,0x90
+  ################ Return ############################		        
+  movq $0, %rax
+  ret                                                     #59.7
+  .align    16,0x90
 ..___tag_value_asmloop.2:                                       #
                                 # LOE
 # mark_end;

@@ -70,7 +70,7 @@ int comparearrays( void )
 		
 	// ------------------------- Compare Arrays ------------------
 	
-		for ( i = 0; i < SIZE - 5; i++ )
+		for ( i = 0; i < SIZE; i++ )
 		{
 			difference = a[ i ] - b[ i ];
 			sum += difference * difference;
