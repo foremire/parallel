@@ -52,7 +52,7 @@ void init_a( double *a, int N )
 	
 	// -------------------- The loop ------------------------------------------
 	
-		for ( j = 1; j < N-1; j++ )
+		for ( j = 1; j < N; j++ )
 		{
 			a[ j ] = 0;
 		}
@@ -92,7 +92,7 @@ int cloop( double *a, int N, int t )
 	
 		for ( i = 0; i < t; i++ )
 		{
-			for ( j = 1; j < N-1; j++ )
+			for ( j = 1; j < N - 3; j++ )
 			{
 				a[ j ] = ( a[ j - 1 ] + a[ j ] + j ) * 0.43;
 			}

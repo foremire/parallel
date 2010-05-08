@@ -26,7 +26,7 @@ asmloop:
   pushq %r11
 
   #initialization
-  sub $1, %esi
+  sub $4, %esi
   movl $0, %r15d  # i = 0
 
   ############### The outermost loop #############
@@ -90,8 +90,8 @@ asmloop:
       ############## End code inside loops ###########
       # Branch for j if needed
       lea 5(%r14d), %r13d
-      lea 6(%r14d), %r13d
-      lea 7(%r14d), %r13d
+      lea 6(%r14d), %r12d
+      lea 7(%r14d), %r11d
 
       addl $4, %r14d
       cmpl %esi, %r14d

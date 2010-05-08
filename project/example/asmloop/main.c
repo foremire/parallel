@@ -78,7 +78,7 @@ int comparearrays( void )
 		
 		if ( sum > 0.001 )
 		{
-			//printf( "Error: Difference is %lf\n",  sum );
+			printf( "Error: Difference is %lf\n",  sum );
 			return( 1 );
 		}
 	
@@ -87,7 +87,7 @@ int comparearrays( void )
 }
 /*
 
-	print_a prints the values of a
+	print_array prints the values of a
 	
 	Parameters:
 		None. Everything is in global variables
@@ -96,7 +96,7 @@ int comparearrays( void )
 	
 
 */
-void print_a( void )
+void print_array( double * a )
 {
 	// ------------------------------ Local Variables --------------------------
 		
@@ -156,18 +156,19 @@ int main( int argc, char*argv[] )
 	
 		printf( "Now Checking for correctness\n" );
 		init_a( a, SIZE );
-		print_a( );
+		init_a( b, SIZE );
+		print_array(a);
 		
 		printf( "First testing loop\n" );
 
 		printf( "Now executing the C loop\n" );
 		cloop( a, SIZE, smallsize );
-		print_a( );
+		print_array(a);
 
 		printf( "Now executing the Assembly loop\n" );
 		init_a( a, SIZE );
 		r = asmloop( a, SIZE, smallsize, k );
-		print_a( );
+		print_array(a);
 		
 		
 		//printf( "Return value = %d\t = 0x%X\n", r, r );
@@ -181,12 +182,16 @@ int main( int argc, char*argv[] )
 			
 			// Run both to compare results
 			cloop( a, SIZE, i );
-			asmloop( b, SIZE, i, k );
+		        //print_array(a);
+		
+                        asmloop( b, SIZE, i, k );
+		        //print_array(b);
 			
 			// Now compare the results.
 			if ( comparearrays() )
 			{
 				printf( "-" );
+                                return 0;
 			}
 			else
 			{
