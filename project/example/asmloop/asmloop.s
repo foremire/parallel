@@ -37,7 +37,8 @@ asmloop:
     movl $2, %r13d
     movl $3, %r12d
     movl $4, %r11d
-		
+	
+    # preload a[0]
     movq -8(%rdi,%r14,8), %xmm0
 ..Branch.j:
       ############# Code inside the loops ############
@@ -69,23 +70,21 @@ asmloop:
       # calculate the first result
       addsd %xmm0, %xmm1
       mulsd 8(%rcx), %xmm1
+      movsd %xmm1, 0(%rdi,%r14,8)
       
       # calcluate the second result
       addsd %xmm1, %xmm2
       mulsd 8(%rcx), %xmm2
+      movsd %xmm2, 8(%rdi,%r14,8)
       
       # calcluate the third result
       addsd %xmm2, %xmm3
       mulsd 8(%rcx), %xmm3
+      movsd %xmm3, 16(%rdi,%r14,8)
 		
       # calcluate the second result
       addsd %xmm3, %xmm4
       mulsd 8(%rcx), %xmm4
-      
-      # store the results
-      movsd %xmm1, 0(%rdi,%r14,8)
-      movsd %xmm2, 8(%rdi,%r14,8)
-      movsd %xmm3, 16(%rdi,%r14,8)
       movsd %xmm4, 24(%rdi,%r14,8)
 
       # reuse the last result as the first value in the next ineration
