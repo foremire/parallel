@@ -14,8 +14,9 @@
 
 
 CC = /opt/intel/Compiler/11.1/069/bin/intel64/icc
+#CC = cc
 
-OBJS = main.o
+OBJS = main.o 
 
 LIBPATH = /opt/intel/Compiler/11.1/069/lib/intel64
 
@@ -23,7 +24,7 @@ LIBRARYPATH = -L$(LIBPATH)
 
 LIBS = $(LIBRARYPATH) -lintlc
 
-CFLAGS = 
+CFLAGS = -O0
 
 
 ##################################################################
@@ -44,7 +45,7 @@ CFLAGS =
 ##################################################################
 
 myasm: asmloop.s c_loop.c main.c
-	$(CC) -o myasm gettime.c main.c c_loop.c asmloop.s $(LIBS)
+	$(CC) -o myasm $(CFLAGS) gettime.c main.c c_loop.c asmloop.s $(LIBS)
 
 all: $(OBJS)
 	gcc -o myasm $(OBJS) $(LIBS)

@@ -78,7 +78,7 @@ int comparearrays( void )
 		
 		if ( sum > 0.001 )
 		{
-			printf( "Error: Difference is %f\n", ( float ) difference );
+			//printf( "Error: Difference is %lf\n",  sum );
 			return( 1 );
 		}
 	
@@ -106,7 +106,7 @@ void print_a( void )
 	
 	// ---------------------------- Print a -----------------------------------
 	
-		for ( i = 0; i < 10; i++ )
+		for ( i = 0; i < SIZE; i++ )
 		{
 			printf( "%3.3f\t", (float) a[ i ] );
 		}
@@ -202,13 +202,23 @@ int main( int argc, char*argv[] )
 		totaltime = 0;
 		for ( i = 0; i < TEST_LOOP; i++ )
 		{
-		
 			init_a( b, SIZE );
 			startime = GetTime();
 			asmloop( b, SIZE, 3000000, k );
 			totaltime += GetTime() - startime;
 		}
-		printf( "Average time: %4.3f seconds\n", ( float ) totaltime / (float)TEST_LOOP );
+		printf( "ASM Average time: %4.3f seconds\n", ( float ) totaltime / (float)TEST_LOOP );
+		
+                totaltime = 0;
+		for ( i = 0; i < TEST_LOOP; i++ )
+		{
+			init_a( b, SIZE );
+			startime = GetTime();
+			cloop( b, SIZE, 3000000);
+			totaltime += GetTime() - startime;
+		}
+		printf( "C Average time: %4.3f seconds\n", ( float ) totaltime / (float)TEST_LOOP );
+		
 		
 	
 	// -------------------- Return --------------------------------------------
