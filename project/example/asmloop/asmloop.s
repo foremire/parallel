@@ -13,21 +13,30 @@ asmloop:
 # parameter 2: %esi N
 # parameter 3: %edx t
 # parameter 4: %rcx --> This one is k, k contains: 1.0, 0.43 and 8.5
-# loop variable: j: %r15d
-# loop variable: i: %r14d
+# loop variable: i: %r15d
+# loop variable: j: %r14d
 # prefixes: l for 4 bytes, q for 8 bytes.
 ..B1.1:                         # Preds ..B1.0
 ..___tag_value_asmloop.1:                                       #52.1
+  # push used registers into stack
+  pushq %r15
+  pushq %r14
+  pushq %r13
+  pushq %r12
+  pushq %r11
+
   #initialization
   sub $1, %esi
-  movl $0, %r14d  # i = 0
+  movl $0, %r15d  # i = 0
 
   ############### The outermost loop #############
 ..Branch.i:
     ############# The inner loop ##################
     #Initialize j to 1
-    movl $1, %r15d
+    movl $1, %r14d
     movl $2, %r13d
+    movl $3, %r12d
+    movl $4, %r11d
 		
 ..Branch.j:
       ############# Code inside the loops ############
@@ -40,43 +49,67 @@ asmloop:
       #}
       
       # Convert j to double
-      cvtsi2sd %r15, %xmm15
-      cvtsi2sd %r13, %xmm14
+      cvtsi2sd %r14, %xmm14
+      cvtsi2sd %r13, %xmm13
+      cvtsi2sd %r12, %xmm12
+      cvtsi2sd %r11, %xmm11
 
       # load the variables
-      movq -8(%rdi,%r15,8), %xmm0
-      movq 0(%rdi,%r15,8), %xmm1
-      movq 8(%rdi,%r15,8), %xmm2
+      movq -8(%rdi,%r14,8), %xmm0
+      movq 0(%rdi,%r14,8), %xmm1
+      movq 8(%rdi,%r14,8), %xmm2
+      movq 16(%rdi,%r14,8), %xmm3
+      movq 24(%rdi,%r14,8), %xmm4
 
-      # calculation
-      addsd %xmm15, %xmm1
+      # calculate the first result
+      addsd %xmm14, %xmm1
       addsd %xmm0, %xmm1
       mulsd 8(%rcx), %xmm1
-
-      addsd %xmm14, %xmm2
+      
+      # calcluate the second result
+      addsd %xmm13, %xmm2
       addsd %xmm1, %xmm2
       mulsd 8(%rcx), %xmm2
+      
+      # calcluate the third result
+      addsd %xmm12, %xmm3
+      addsd %xmm2, %xmm3
+      mulsd 8(%rcx), %xmm3
 		
-      # store the result
-      movsd %xmm1, 0(%rdi,%r15,8)
-      movsd %xmm2, 8(%rdi,%r15,8)
-
+      # calcluate the second result
+      addsd %xmm11, %xmm4
+      addsd %xmm3, %xmm4
+      mulsd 8(%rcx), %xmm4
+      
+      # store the results
+      movsd %xmm1, 0(%rdi,%r14,8)
+      movsd %xmm2, 8(%rdi,%r14,8)
+      movsd %xmm3, 16(%rdi,%r14,8)
+      movsd %xmm4, 24(%rdi,%r14,8)
 		
       ############## End code inside loops ###########
       # Branch for j if needed
-      lea 3(%r15d), %r13d
-      #incl %r15d
-      addl $2, %r15d
-      cmpl %esi, %r15d
+      lea 5(%r14d), %r13d
+      lea 6(%r14d), %r13d
+      lea 7(%r14d), %r13d
+
+      addl $4, %r14d
+      cmpl %esi, %r14d
       jl ..Branch.j
 
     # See if a branch is required
-    incl %r14d
-    cmpl %r14d, %edx
+    incl %r15d
+    cmpl %r15d, %edx
     jne ..Branch.i
 
   ################ Return ############################		        
   movq $0, %rax
+  # pop registers out of stack
+  popq %r11
+  popq %r12
+  popq %r13
+  popq %r14
+  popq %r15
   ret                                                     #59.7
   .align    16,0x90
 ..___tag_value_asmloop.2:                                       #
