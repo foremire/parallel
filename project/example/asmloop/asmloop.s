@@ -38,6 +38,7 @@ asmloop:
     movl $3, %r12d
     movl $4, %r11d
 		
+    movq -8(%rdi,%r14,8), %xmm0
 ..Branch.j:
       ############# Code inside the loops ############
       #for ( i = 0; i < t; i++ )
@@ -55,29 +56,29 @@ asmloop:
       cvtsi2sd %r11, %xmm11
 
       # load the variables
-      movq -8(%rdi,%r14,8), %xmm0
       movq 0(%rdi,%r14,8), %xmm1
       movq 8(%rdi,%r14,8), %xmm2
       movq 16(%rdi,%r14,8), %xmm3
       movq 24(%rdi,%r14,8), %xmm4
 
-      # calculate the first result
       addsd %xmm14, %xmm1
+      addsd %xmm13, %xmm2
+      addsd %xmm12, %xmm3
+      addsd %xmm11, %xmm4
+
+      # calculate the first result
       addsd %xmm0, %xmm1
       mulsd 8(%rcx), %xmm1
       
       # calcluate the second result
-      addsd %xmm13, %xmm2
       addsd %xmm1, %xmm2
       mulsd 8(%rcx), %xmm2
       
       # calcluate the third result
-      addsd %xmm12, %xmm3
       addsd %xmm2, %xmm3
       mulsd 8(%rcx), %xmm3
 		
       # calcluate the second result
-      addsd %xmm11, %xmm4
       addsd %xmm3, %xmm4
       mulsd 8(%rcx), %xmm4
       
@@ -86,6 +87,9 @@ asmloop:
       movsd %xmm2, 8(%rdi,%r14,8)
       movsd %xmm3, 16(%rdi,%r14,8)
       movsd %xmm4, 24(%rdi,%r14,8)
+
+      # reuse the last result as the first value in the next ineration
+      movsd %xmm4, %xmm0
 		
       ############## End code inside loops ###########
       # Branch for j if needed
