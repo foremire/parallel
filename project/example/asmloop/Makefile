@@ -24,7 +24,7 @@ LIBRARYPATH = -L$(LIBPATH)
 
 LIBS = $(LIBRARYPATH) -lintlc
 
-CFLAGS = -O0
+CFLAGS = -O3
 
 
 ##################################################################

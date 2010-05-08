@@ -27,6 +27,7 @@ asmloop:
     ############# The inner loop ##################
     #Initialize j to 1
     movl $1, %r15d
+    movl $2, %r13d
 		
 ..Branch.j:
       ############# Code inside the loops ############
@@ -40,15 +41,13 @@ asmloop:
       
       # Convert j to double
       cvtsi2sd %r15, %xmm15
+      cvtsi2sd %r13, %xmm14
 
       # load the variables
       movq -8(%rdi,%r15,8), %xmm0
       movq 0(%rdi,%r15,8), %xmm1
       movq 8(%rdi,%r15,8), %xmm2
 
-      incl %r15d
-      cvtsi2sd %r15, %xmm14
-     
       # calculation
       addsd %xmm15, %xmm1
       addsd %xmm0, %xmm1
@@ -59,13 +58,15 @@ asmloop:
       mulsd 8(%rcx), %xmm2
 		
       # store the result
-      movsd %xmm1, -8(%rdi,%r15,8)
-      movsd %xmm2, 0(%rdi,%r15,8)
+      movsd %xmm1, 0(%rdi,%r15,8)
+      movsd %xmm2, 8(%rdi,%r15,8)
+
 		
       ############## End code inside loops ###########
       # Branch for j if needed
-      incl %r15d
-      #addl $2, %r15d
+      lea 3(%r15d), %r13d
+      #incl %r15d
+      addl $2, %r15d
       cmpl %esi, %r15d
       jl ..Branch.j
 
