@@ -43,21 +43,16 @@ CFLAGS =
 #						Rules
 ##################################################################
 
+myasm: asmloop.s c_loop.c main.c
+	$(CC) -o myasm gettime.c main.c c_loop.c asmloop.s $(LIBS)
 
 all: $(OBJS)
 	gcc -o myasm $(OBJS) $(LIBS)
 
-toasm:
-	$(CC) -S main.c
-	$(CC) -S asmloop.c
-
-build: asmloop.s c_loop.c main.c
-	$(CC) -o myasm gettime.c main.c c_loop.c asmloop.s $(LIBS)
-
 testasm:
 	$(CC) -O0 -S asmgenerator.c 	
 	
-run:
+run: myasm
 	export LD_LIBRARY_PATH=$(LIBPATH) && ./myasm
 	
 clean:

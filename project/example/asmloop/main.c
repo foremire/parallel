@@ -24,6 +24,7 @@
 *******************************************************************************/
 
 #define SIZE 100
+#define TEST_LOOP 1
 
 /******************************************************************************
 						Global Variables
@@ -199,7 +200,7 @@ int main( int argc, char*argv[] )
 		printf( "Performance tests\n" );
 		
 		totaltime = 0;
-		for ( i = 0; i < 5; i++ )
+		for ( i = 0; i < TEST_LOOP; i++ )
 		{
 		
 			init_a( b, SIZE );
@@ -207,7 +208,7 @@ int main( int argc, char*argv[] )
 			asmloop( b, SIZE, 3000000, k );
 			totaltime += GetTime() - startime;
 		}
-		printf( "Average time: %4.3f seconds\n", ( float ) totaltime / 5.0 );
+		printf( "Average time: %4.3f seconds\n", ( float ) totaltime / (float)TEST_LOOP );
 		
 	
 	// -------------------- Return --------------------------------------------
