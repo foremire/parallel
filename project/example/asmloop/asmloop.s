@@ -27,18 +27,11 @@ asmloop:
 ..Branch.i:
 		
 		############# The inner loop ##################
-		# Initialize j to 1
+		#Initialize j to 1
 		movl $1, %r15d
 		
-		##### Initialize a[ j ] to a[ 1 ]:
-		movq %rdi, %r13  # This is a[ 0 ]
-		# Set tmp = 8
-		movq  $8, %r9 # now r9 = 8
-		
-		#add &a[ j ] + tmp
-		addq %r9, %r13 # now r13 is a[1]
-		### end init a[j] to a[1] ####
-		
+		#Initialize a[ j ] to a[ 1 ]:
+                leaq 8(%rdi), %r13
 		
 		#The tag for the jump
 ..Branch.j:
@@ -52,50 +45,29 @@ asmloop:
 		#	}
 		#}
 		
-		
-		
-		# Get temporary values in %r9 and %r10
-		movq 0(%r13), %r9  #This is a[ j ]
-		movq -8(%r13), %r10  #This is a[ j - 1 ]
-		
 		# Add the values into %r9
-		movq %r9, %xmm0
-		movq %r10, %xmm1
-		addsd %xmm1, %xmm0
-		movq %xmm0, %r9
+		movq 0(%r13), %xmm0
+		movq -8(%r13), %xmm1
 		
-		#At this point r9 and xmm0 contain a[j] + a[j-1]
+                #xmm0 contains ( a[j] + a[j-1] )
+		addsd %xmm1, %xmm0
 		
 		# Add j: First it has to ve converted to double
 		cvtsi2sd %r15, %xmm1
-		
-		
-		#Add
+		#xmm0 contains ( a[j] + a[j-1] + (double) j )
 		addsd %xmm1, %xmm0
-		movq %xmm0, %r9
-		
-		#At this point r9 and xmm0 contain (a[j] + a[j-1] + (double) j )
 		
 		#Multiply by 0.43: Multiplication happens from xmm
 		movq 8(%rcx), %xmm1
-		
+
+		#xmm0 contains ( a[j] + a[j-1] + (double) j ) * 0.43
 		mulsd %xmm1, %xmm0
-		movq %xmm0, %r9
-		
-		# At this point the multiplication was made, and it is ready in xmm0 and r9
 		
 		#Store the result
-		
-		#movsd %xmm0, 0(%r13)
-		movq %r9, 0(%r13)
+		movsd %xmm0, 0(%r13)
 		
 		# Get &a[ j + 1 ], that will be used in the next iteration.
-		# Set tmp = 8
-		movq  $8, %r9
-		
-		#add &a[ j ] + tmp
-		addq %r9, %r13
-		
+		addq $8, %r13
 		
 		############## End code inside loops ###########
 		
