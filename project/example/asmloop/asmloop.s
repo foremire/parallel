@@ -28,6 +28,7 @@ asmloop:
   #initialization
   sub $4, %esi
   movl $0, %r15d  # i = 0
+  movq 8(%rcx), %xmm15
 
   ############### The outermost loop #############
 ..Branch.i:
