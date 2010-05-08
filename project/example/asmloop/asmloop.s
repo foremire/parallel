@@ -38,8 +38,11 @@ asmloop:
     movl $3, %r12d
     movl $4, %r11d
 	
+    incl %r15d
+
     # preload a[0]
     movq -8(%rdi,%r14,8), %xmm0
+
 ..Branch.j:
       ############# Code inside the loops ############
       #for ( i = 0; i < t; i++ )
@@ -95,20 +98,19 @@ asmloop:
 		
       ############## End code inside loops ###########
       # Branch for j if needed
-      lea 5(%r14d), %r13d
-      lea 6(%r14d), %r12d
-      lea 7(%r14d), %r11d
-
-      addl $4, %r14d
+      lea 4(%r14d), %r14d
+      lea 4(%r13d), %r13d
+      lea 4(%r12d), %r12d
+      lea 4(%r11d), %r11d
       cmpl %esi, %r14d
       jl ..Branch.j
 
     # See if a branch is required
-    incl %r15d
     cmpl %r15d, %edx
     jne ..Branch.i
 
-  ################ Return ############################		        
+  ################ Return ############################
+  # prepare the return value
   movq $0, %rax
   # pop registers out of stack
   popq %r11
