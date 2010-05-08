@@ -15,7 +15,6 @@ asmloop:
 # parameter 4: %rcx --> This one is k, k contains: 1.0, 0.43 and 8.5
 # loop variable: i: %r14d
 # loop variable: j: %r15d
-# a[ j ]: %r13
 # prefixes: l for 4 bytes, q for 8 bytes.
 ..B1.1:                         # Preds ..B1.0
 ..___tag_value_asmloop.1:                                       #52.1
@@ -29,8 +28,6 @@ asmloop:
     #Initialize j to 1
     movl $1, %r15d
 		
-    #Initialize a[ j ] to a[ 1 ]:
-    leaq 8(%rdi), %r13
 ..Branch.j:
       ############# Code inside the loops ############
       #for ( i = 0; i < t; i++ )
@@ -41,29 +38,20 @@ asmloop:
       #  }
       #}
       
-      # Add the values into %r9
-      movq 0(%r13), %xmm0
-      movq -8(%r13), %xmm1
-		
-      #xmm0 contains ( a[j] + a[j-1] )
+      # load the variables
+      movq 0(%rdi,%r15,8), %xmm0
+      movq -8(%rdi,%r15,8), %xmm1
+      
+      # Convert j to double
+      cvtsi2sd %r15, %xmm2
+     
+      # calculation
       addsd %xmm1, %xmm0
+      addsd %xmm2, %xmm0
+      mulsd 8(%rcx), %xmm0
 		
-      # Add j: First it has to ve converted to double
-      cvtsi2sd %r15, %xmm1
-      #xmm0 contains ( a[j] + a[j-1] + (double) j )
-      addsd %xmm1, %xmm0
-		
-      #Multiply by 0.43: Multiplication happens from xmm
-      movq 8(%rcx), %xmm1
-
-      #xmm0 contains ( a[j] + a[j-1] + (double) j ) * 0.43
-      mulsd %xmm1, %xmm0
-		
-      #Store the result
-      movsd %xmm0, 0(%r13)
-		
-      # Get &a[ j + 1 ], that will be used in the next iteration.
-      addq $8, %r13
+      # store the result
+      movsd %xmm0, 0(%rdi,%r15,8)
 		
       ############## End code inside loops ###########
       # Branch for j if needed
