@@ -297,30 +297,31 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	imull	-20(%rbp), %eax         #-20(%rbp) is cycleJ
 	addl	-24(%rbp), %eax
 	cltq
+        
         mov     %rax, %rsi
+        add     %rcx, %rsi
 	
         salq	$2, %rax
 	leaq	(%rdx,%rax), %rax
         movups	(%rax), %xmm8
 
         #oprand_b_1 = __builtin_ia32_loadups(&(matrixBT.data[(cycleJ  + 1)* dim + cycleK]));
-        add     %rcx, %rsi
         mov     %rsi, %rax
+        add     %rcx, %rsi
 
 	salq	$2, %rax
 	leaq	(%rdx,%rax), %rax
         movups	(%rax), %xmm9
 
         #oprand_b_2 = __builtin_ia32_loadups(&(matrixBT.data[(cycleJ + 2) * dim + cycleK]));
-        add     %rcx, %rsi
         mov     %rsi, %rax
+        add     %rcx, %rsi
 
 	salq	$2, %rax
 	leaq	(%rdx,%rax), %rax
         movups	(%rax), %xmm10
 
         #oprand_b_3 = __builtin_ia32_loadups(&(matrixBT.data[(cycleJ + 3) * dim + cycleK]));
-        add     %rcx, %rsi
         mov     %rsi, %rax
 
 	salq	$2, %rax                #&(matrixBT.data[(cycleJ + 1) * dim + cycleK]
@@ -332,24 +333,20 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
         pop      %rsi
 
         #acc_0 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_0));
-        movups  %xmm3, %xmm1
-        mulps   %xmm8, %xmm1
-        addps   %xmm1, %xmm4
+        movups  %xmm3, %xmm12
+        movups  %xmm3, %xmm13
+        movups  %xmm3, %xmm14
+        movups  %xmm3, %xmm15
 
-        #acc_1 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_1));
-        movups  %xmm3, %xmm1
-        mulps   %xmm9, %xmm1
-        addps   %xmm1, %xmm5
+        mulps   %xmm8, %xmm12
+        mulps   %xmm9, %xmm13
+        mulps   %xmm10, %xmm14
+        mulps   %xmm11, %xmm15
 
-        #acc_2 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_2));
-        movups  %xmm3, %xmm1
-        mulps   %xmm10, %xmm1
-        addps   %xmm1, %xmm6
-
-        #acc_3 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_3));
-        movups  %xmm3, %xmm1
-        mulps   %xmm11, %xmm1
-        addps   %xmm1, %xmm7
+        addps   %xmm12, %xmm4
+        addps   %xmm13, %xmm5
+        addps   %xmm14, %xmm6
+        addps   %xmm15, %xmm7
 
 	addl	$4, -24(%rbp)
 	jmp	.L16
