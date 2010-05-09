@@ -20,7 +20,7 @@ LIBS = -lpapi -lgomp -lm
 LIBRARIES = -L$(LIBPATH) $(LIBS)
 
 CC = cc
-CFLAGS = -c -g -Wall -fopenmp -O0 -msse3 $(INCLUDES)
+CFLAGS = -c -Wall -fopenmp -O0 -msse3 $(INCLUDES)
 OUTPUT = results_mm.txt
 RUN = ./$(PROJECT)
 
