@@ -322,23 +322,22 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
         pushq    %rsi
         pushq    %rcx
 
-
+        #matrixA.data -> %rdx
 	movq	-248(%rbp), %rax
 	movq	8(%rax), %rax
 	movq	(%rax), %rdx
 
-        # dim * sizeof(float) -> %rcx
+        # dim -> %rcx
 	movq	-248(%rbp), %rax
 	movl	32(%rax), %eax
-        
-        mov     %eax, %ecx
+	cltq
+        mov     %rax, %rcx
 
+        #oprand_a = __builtin_ia32_loadups(&(matrixA.data[cycleI * dim + cycleK]));
 	imull	-16(%rbp), %eax         #-16(%rbp) is cycleI
 	addl	-24(%rbp), %eax         #-24(%rbp) is cycleK
 	cltq
 	salq	$2, %rax                # * sizeof(float)
-
-        #oprand_a = __builtin_ia32_loadups(&(matrixA.data[cycleI * dim + cycleK]));
 	leaq	(%rdx,%rax), %rax
 	movups	(%rax), %xmm0
 	movlps	%xmm0, -176(%rbp)
@@ -346,22 +345,22 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	
         movups	(%rax), %xmm3
 
-        #oprand_b_0 = __builtin_ia32_loadups(&(matrixBT.data[cycleJ * dim + cycleK]));
+        #matrixRT.data -> %rdx
 	movq	-248(%rbp), %rax
 	movq	16(%rax), %rax
 	movq	(%rax), %rdx
 
+        #oprand_b_0 = __builtin_ia32_loadups(&(matrixBT.data[cycleJ * dim + cycleK]));
+        
+        # (cycleJ * dim + cycleK) -> %rsi
         movl    %ecx, %eax
-
 	imull	-20(%rbp), %eax         #-20(%rbp) is cycleJ
 	addl	-24(%rbp), %eax
 	cltq
-	salq	$2, %rax
-        
-        # (cycleI * dim + cycleK) * sizeof(float) -> %rsi
         mov     %rax, %rsi
-
-	leaq	(%rdx,%rsi), %rax
+	
+        salq	$2, %rax
+	leaq	(%rdx,%rax), %rax
 	movups	(%rax), %xmm0
 	movlps	%xmm0, -192(%rbp)
 	movhps	%xmm0, -184(%rbp)       #%xmm0 -> oprand_b_0
@@ -369,49 +368,40 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
         movups	(%rax), %xmm8
 
         #oprand_b_1 = __builtin_ia32_loadups(&(matrixBT.data[(cycleJ  + 1)* dim + cycleK]));
+        add     %rcx, %rsi
+        mov     %rsi, %rax
 
-	movl	-20(%rbp), %eax
-	leal	1(%rax), %ecx
-	movq	-248(%rbp), %rax
-	movl	32(%rax), %eax
-	imull	%ecx, %eax
-	addl	-24(%rbp), %eax
-	cltq
 	salq	$2, %rax
 	leaq	(%rdx,%rax), %rax
 	movups	(%rax), %xmm0
 	movlps	%xmm0, -208(%rbp)
 	movhps	%xmm0, -200(%rbp)       #%xmm0 -> oprand_b_1
+        
+        movups	(%rax), %xmm9
 
         #oprand_b_0 = __builtin_ia32_loadups(&(matrixBT.data[(cycleJ + 2) * dim + cycleK]));
+        add     %rcx, %rsi
+        mov     %rsi, %rax
 
-	movl	-20(%rbp), %eax
-	leal	2(%rax), %ecx
-	movq	-248(%rbp), %rax
-	movl	32(%rax), %eax
-	imull	%ecx, %eax
-	addl	-24(%rbp), %eax
-	cltq
 	salq	$2, %rax
 	leaq	(%rdx,%rax), %rax
 	movups	(%rax), %xmm0
 	movlps	%xmm0, -224(%rbp)
 	movhps	%xmm0, -216(%rbp)       #%xmm0 -> oprand_b_2
+        
+        movups	(%rax), %xmm10
 
         #oprand_b_0 = __builtin_ia32_loadups(&(matrixBT.data[(cycleJ + 3) * dim + cycleK]));
+        add     %rcx, %rsi
+        mov     %rsi, %rax
 
-	movl	-20(%rbp), %eax         #cycleJ
-	leal	3(%rax), %ecx           #cycleJ + 3
-	movq	-248(%rbp), %rax
-	movl	32(%rax), %eax          #dim
-	imull	%ecx, %eax              #(cycleJ + 3)*dim
-	addl	-24(%rbp), %eax         #(cycleJ + 3)*dim + cycleK
-	cltq
 	salq	$2, %rax                #&(matrixBT.data[(cycleJ + 1) * dim + cycleK]
 	leaq	(%rdx,%rax), %rax
 	movups	(%rax), %xmm0           #oprand_b_3 -> %xmm0
 	movlps	%xmm0, -240(%rbp)
 	movhps	%xmm0, -232(%rbp)       #%xmm0 -> oprand_b_3
+        
+        movups	(%rax), %xmm11
 
         #restore %rsi
         pop      %rcx
