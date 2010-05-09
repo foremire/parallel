@@ -136,71 +136,65 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	movl	36(%rax), %eax
 	addl	-8(%rbp), %eax
 	movl	%eax, -12(%rbp)
-	movl	$0, -16(%rbp)
-	movl	$0, -20(%rbp)
-	movl	$0, -24(%rbp)
+	movl	$0, -16(%rbp)           #cycleI = 0
+	movl	$0, -20(%rbp)           #cycleJ = 0
+	movl	$0, -24(%rbp)           #cycleK = 0
 	movl	-8(%rbp), %eax
 	movl	%eax, -16(%rbp)
 .L11:
-	movl	-16(%rbp), %eax
-	cmpl	-12(%rbp), %eax
+	movl	-16(%rbp), %eax         #cycleI = start
+	cmpl	-12(%rbp), %eax         #cycleI < end
 	jge	.L18
 .L9:
-	movl	$0, -20(%rbp)
+	movl	$0, -20(%rbp)           #cycleJ = 0
 .L14:
 	movq	-248(%rbp), %rax
 	movq	(%rax), %rax
-	movl	8(%rax), %eax
+	movl	8(%rax), %eax           #eax = matrixB.xDim
 	subl	$3, %eax
-	cmpl	-20(%rbp), %eax
+	cmpl	-20(%rbp), %eax         #cycleJ < matrixB.xDim - 3
 	jg	.L10
-	addl	$1, -16(%rbp)
-	jmp	.L11
+	addl	$1, -16(%rbp)           #++cycleI
+	jmp	.L11                    #start over to next row
 .L10:
-	movl	$init_array, %eax
-	movups	(%rax), %xmm0
-	movlps	%xmm0, -48(%rbp)
+        xorps   %xmm0, %xmm0
+	movlps	%xmm0, -48(%rbp)        #acc_0
 	movhps	%xmm0, -40(%rbp)
-	movl	$init_array, %eax
-	movups	(%rax), %xmm0
-	movlps	%xmm0, -64(%rbp)
+	movlps	%xmm0, -64(%rbp)        #acc_1
 	movhps	%xmm0, -56(%rbp)
-	movl	$init_array, %eax
-	movups	(%rax), %xmm0
-	movlps	%xmm0, -80(%rbp)
+	movlps	%xmm0, -80(%rbp)        #acc_2
 	movhps	%xmm0, -72(%rbp)
-	movl	$init_array, %eax
-	movups	(%rax), %xmm0
-	movlps	%xmm0, -96(%rbp)
+	movlps	%xmm0, -96(%rbp)        #acc_3
 	movhps	%xmm0, -88(%rbp)
-	movl	$0, -24(%rbp)
+	movl	$0, -24(%rbp)           #cycleK = 0
 .L16:
 	movq	-248(%rbp), %rax
 	movl	32(%rax), %eax
 	subl	$3, %eax
-	cmpl	-24(%rbp), %eax
+	cmpl	-24(%rbp), %eax         #cycleK < (dim - SSE_LENGTH + 1)
 	jg	.L12
-	leaq	-112(%rbp), %rax
-	xorps	%xmm0, %xmm0
+	
+        leaq	-112(%rbp), %rax
 	movlps	-48(%rbp), %xmm0
 	movhps	-40(%rbp), %xmm0
 	movups	%xmm0, (%rax)
-	leaq	-128(%rbp), %rax
-	xorps	%xmm0, %xmm0
+	
+        leaq	-128(%rbp), %rax
 	movlps	-64(%rbp), %xmm0
 	movhps	-56(%rbp), %xmm0
 	movups	%xmm0, (%rax)
-	leaq	-144(%rbp), %rax
-	xorps	%xmm0, %xmm0
+	
+        leaq	-144(%rbp), %rax
 	movlps	-80(%rbp), %xmm0
 	movhps	-72(%rbp), %xmm0
 	movups	%xmm0, (%rax)
-	leaq	-160(%rbp), %rax
-	xorps	%xmm0, %xmm0
+	
+        leaq	-160(%rbp), %rax
 	movlps	-96(%rbp), %xmm0
 	movhps	-88(%rbp), %xmm0
 	movups	%xmm0, (%rax)
-	movl	$1, -24(%rbp)
+	
+        movl	$1, -24(%rbp)           #++cycleK
 .L15:
 	cmpl	$3, -24(%rbp)
 	jle	.L13
