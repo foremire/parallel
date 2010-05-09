@@ -210,32 +210,25 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
         movups  %xmm7, (%rax)
 	
         #imd_ret_0[0] += imd_ret_0[1] + imd_ret_0[2] + imd_ret_0[3];
-        movss	-112(%rbp), %xmm0
-	addss	-108(%rbp), %xmm0
-	addss	-104(%rbp), %xmm0
-	addss	-100(%rbp), %xmm0
-	movss	%xmm0, -112(%rbp)
+        movss	-112(%rbp), %xmm4
+	movss	-128(%rbp), %xmm5
+	movss	-144(%rbp), %xmm6
+	movss	-160(%rbp), %xmm7
 
-        #imd_ret_1[0] += imd_ret_1[cycleK];
-	movss	-128(%rbp), %xmm0
-	addss	-124(%rbp), %xmm0
-	addss	-120(%rbp), %xmm0
-	addss	-116(%rbp), %xmm0
-	movss	%xmm0, -128(%rbp)
+	addss	-108(%rbp), %xmm4
+	addss	-124(%rbp), %xmm5
+	addss	-140(%rbp), %xmm6
+	addss	-156(%rbp), %xmm7
 
-        #imd_ret_2[0] += imd_ret_2[cycleK];
-	movss	-144(%rbp), %xmm0
-	addss	-140(%rbp), %xmm0
-	addss	-136(%rbp), %xmm0
-	addss	-132(%rbp), %xmm0
-	movss	%xmm0, -144(%rbp)
+	addss	-104(%rbp), %xmm4
+	addss	-120(%rbp), %xmm5
+	addss	-136(%rbp), %xmm6
+	addss	-152(%rbp), %xmm7
 
-        #imd_ret_3[0] += imd_ret_3[cycleK];
-	movss	-160(%rbp), %xmm0
-	addss	-156(%rbp), %xmm0
-	addss	-152(%rbp), %xmm0
-	addss	-148(%rbp), %xmm0
-	movss	%xmm0, -160(%rbp)
+	addss	-100(%rbp), %xmm4
+	addss	-116(%rbp), %xmm5
+	addss	-132(%rbp), %xmm6
+	addss	-148(%rbp), %xmm7
 
         push %rsi;
 
@@ -253,20 +246,16 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
         movq    %rax, %rsi
 
         #matrixC.data[cycleI * dim + cycleJ] = imd_ret_0[0];
-	movl	-112(%rbp), %eax
-	movl	%eax, (%rdx, %rsi, 4)
+	movss	%xmm4, (%rdx, %rsi, 4)
 
         #matrixC.data[cycleI * dim + cycleJ + 1] = imd_ret_0[1];
-	movl	-128(%rbp), %eax
-	movl	%eax, 4(%rdx, %rsi, 4)
+	movss	%xmm5, 4(%rdx, %rsi, 4)
 
         #matrixC.data[cycleI * dim + cycleJ + 2] = imd_ret_0[2];
-	movl	-144(%rbp), %eax
-	movl	%eax, 8(%rdx, %rsi, 4)
+	movss	%xmm6, 8(%rdx, %rsi, 4)
 
         #matrixC.data[cycleI * dim + cycleJ + 3] = imd_ret_0[3];
-	movl	-160(%rbp), %eax
-	movl	%eax, 12(%rdx, %rsi, 4)
+	movss	%xmm7, 12(%rdx, %rsi, 4)
 
         pop %rsi
 
