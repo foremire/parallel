@@ -194,28 +194,20 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	jg	.L12
 	
         #__builtin_ia32_storeups(imd_ret_0, acc_0);
-        leaq	-112(%rbp), %rax        #oprand_b_0
-	movlps	-48(%rbp), %xmm0
-	movhps	-40(%rbp), %xmm0
-	movups	%xmm0, (%rax)
+        leaq	-112(%rbp), %rax        #acc_0
+        movups  %xmm4, (%rax)
 
         #__builtin_ia32_storeups(imd_ret_1, acc_1);
         leaq	-128(%rbp), %rax        #oprand_b_1
-	movlps	-64(%rbp), %xmm0
-	movhps	-56(%rbp), %xmm0
-	movups	%xmm0, (%rax)
+        movups  %xmm5, (%rax)
 	
         #__builtin_ia32_storeups(imd_ret_2, acc_2);
         leaq	-144(%rbp), %rax        #oprand_b_2
-	movlps	-80(%rbp), %xmm0
-	movhps	-72(%rbp), %xmm0
-	movups	%xmm0, (%rax)
+        movups  %xmm6, (%rax)
 	
         #__builtin_ia32_storeups(imd_ret_3, acc_3);
         leaq	-160(%rbp), %rax        #oprand_b_3
-	movlps	-96(%rbp), %xmm0
-	movhps	-88(%rbp), %xmm0
-	movups	%xmm0, (%rax)
+        movups  %xmm7, (%rax)
 	
         movl	$1, -24(%rbp)           #cycleK = 1
 .L15:
@@ -339,10 +331,6 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	cltq
 	salq	$2, %rax                # * sizeof(float)
 	leaq	(%rdx,%rax), %rax
-	movups	(%rax), %xmm0
-	movlps	%xmm0, -176(%rbp)
-	movhps	%xmm0, -168(%rbp)
-	
         movups	(%rax), %xmm3
 
         #matrixRT.data -> %rdx
@@ -361,10 +349,6 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	
         salq	$2, %rax
 	leaq	(%rdx,%rax), %rax
-	movups	(%rax), %xmm0
-	movlps	%xmm0, -192(%rbp)
-	movhps	%xmm0, -184(%rbp)       #%xmm0 -> oprand_b_0
-        
         movups	(%rax), %xmm8
 
         #oprand_b_1 = __builtin_ia32_loadups(&(matrixBT.data[(cycleJ  + 1)* dim + cycleK]));
@@ -373,10 +357,6 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 
 	salq	$2, %rax
 	leaq	(%rdx,%rax), %rax
-	movups	(%rax), %xmm0
-	movlps	%xmm0, -208(%rbp)
-	movhps	%xmm0, -200(%rbp)       #%xmm0 -> oprand_b_1
-        
         movups	(%rax), %xmm9
 
         #oprand_b_2 = __builtin_ia32_loadups(&(matrixBT.data[(cycleJ + 2) * dim + cycleK]));
@@ -385,10 +365,6 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 
 	salq	$2, %rax
 	leaq	(%rdx,%rax), %rax
-	movups	(%rax), %xmm0
-	movlps	%xmm0, -224(%rbp)
-	movhps	%xmm0, -216(%rbp)       #%xmm0 -> oprand_b_2
-        
         movups	(%rax), %xmm10
 
         #oprand_b_3 = __builtin_ia32_loadups(&(matrixBT.data[(cycleJ + 3) * dim + cycleK]));
@@ -397,10 +373,6 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 
 	salq	$2, %rax                #&(matrixBT.data[(cycleJ + 1) * dim + cycleK]
 	leaq	(%rdx,%rax), %rax
-	movups	(%rax), %xmm0           #oprand_b_3 -> %xmm0
-	movlps	%xmm0, -240(%rbp)
-	movhps	%xmm0, -232(%rbp)       #%xmm0 -> oprand_b_3
-        
         movups	(%rax), %xmm11
 
         #restore %rsi
@@ -412,36 +384,21 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
         mulps   %xmm8, %xmm1
         addps   %xmm1, %xmm4
 
-        movups  %xmm4, %xmm0
-	movlps	%xmm0, -48(%rbp)
-	movhps	%xmm0, -40(%rbp)
-
         #acc_1 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_1));
         movups  %xmm3, %xmm1
         mulps   %xmm9, %xmm1
         addps   %xmm1, %xmm5
-
-        movups  %xmm5, %xmm0
-	movlps	%xmm0, -64(%rbp)
-	movhps	%xmm0, -56(%rbp)
 
         #acc_2 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_2));
         movups  %xmm3, %xmm1
         mulps   %xmm10, %xmm1
         addps   %xmm1, %xmm6
 
-        movups  %xmm6, %xmm0
-	movlps	%xmm0, -80(%rbp)
-	movhps	%xmm0, -72(%rbp)
-
         #acc_3 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_3));
         movups  %xmm3, %xmm1
         mulps   %xmm11, %xmm1
         addps   %xmm1, %xmm7
 
-        movups  %xmm7, %xmm0
-	movlps	%xmm0, -96(%rbp)
-	movhps	%xmm0, -88(%rbp)
 	addl	$4, -24(%rbp)
 	jmp	.L16
 .L18:
