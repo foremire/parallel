@@ -157,6 +157,12 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	addl	$1, -16(%rbp)           #++cycleI
 	jmp	.L11                    #start over to next row
 .L10:
+        
+#register map
+#xmm0 acc_0
+#xmm1 acc_1
+#xmm2 acc_2
+#xmm3 acc_3
         xorps   %xmm0, %xmm0
 	movlps	%xmm0, -48(%rbp)        #acc_0
 	movhps	%xmm0, -40(%rbp)
@@ -198,11 +204,12 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	movhps	-88(%rbp), %xmm0
 	movups	%xmm0, (%rax)
 	
-        movl	$1, -24(%rbp)           #++cycleK
+        movl	$1, -24(%rbp)           #cycleK = 1
 .L15:
-	cmpl	$3, -24(%rbp)           ##cycleK < (dim - SSE_LENGTH + 1)
+	cmpl	$3, -24(%rbp)           #cycleK < SSE_LENGTH
 	jle	.L13
-        
+       
+        #oprand_a = __builtin_ia32_loadups(&(matrixA.data[cycleI * dim + cycleK]));
 	movq	-248(%rbp), %rax
 	movq	24(%rax), %rax
 	movq	(%rax), %rdx
@@ -216,6 +223,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	movl	-112(%rbp), %eax
 	movl	%eax, (%rdx)
 
+        #oprand_a = __builtin_ia32_loadups(&(matrixA.data[cycleI * dim + cycleK]));
 	movq	-248(%rbp), %rax
 	movq	24(%rax), %rax
 	movq	(%rax), %rdx
@@ -230,6 +238,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	movl	-128(%rbp), %eax
 	movl	%eax, (%rdx)
 
+        #oprand_a = __builtin_ia32_loadups(&(matrixA.data[cycleI * dim + cycleK]));
 	movq	-248(%rbp), %rax
 	movq	24(%rax), %rax
 	movq	(%rax), %rdx
@@ -244,6 +253,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	movl	-144(%rbp), %eax
 	movl	%eax, (%rdx)
 
+        #oprand_a = __builtin_ia32_loadups(&(matrixA.data[cycleI * dim + cycleK]));
 	movq	-248(%rbp), %rax
 	movq	24(%rax), %rax
 	movq	(%rax), %rdx
@@ -260,6 +270,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	addl	$4, -20(%rbp)
 	jmp	.L14
 .L13:
+        #matrixC.data[cycleI * dim + cycleJ] = imd_ret_0[0];
 	movss	-112(%rbp), %xmm1       #oprand_b_0
 	movl	-24(%rbp), %eax         #cycleK
 	cltq                            #%eax->%rax
@@ -267,6 +278,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	addss	%xmm1, %xmm0
 	movss	%xmm0, -112(%rbp)
 
+        #matrixC.data[cycleI * dim + cycleJ + 1] = imd_ret_1[0];
 	movss	-128(%rbp), %xmm1
 	movl	-24(%rbp), %eax
 	cltq
@@ -274,6 +286,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	addss	%xmm1, %xmm0
 	movss	%xmm0, -128(%rbp)
 
+        #matrixC.data[cycleI * dim + cycleJ + 2] = imd_ret_2[0];
 	movss	-144(%rbp), %xmm1
 	movl	-24(%rbp), %eax
 	cltq
@@ -281,6 +294,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	addss	%xmm1, %xmm0
 	movss	%xmm0, -144(%rbp)
 
+        #matrixC.data[cycleI * dim + cycleJ + 3] = imd_ret_3[0];
 	movss	-160(%rbp), %xmm1
 	movl	-24(%rbp), %eax
 	cltq
