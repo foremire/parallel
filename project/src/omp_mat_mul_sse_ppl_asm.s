@@ -214,64 +214,39 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	cmpl	$3, -24(%rbp)           #cycleK < SSE_LENGTH
 	jle	.L13
 
-        #matrixC.data[cycleI * dim + cycleJ] = imd_ret_0[0];
+        push %rsi;
+
+        #matrixC.data -> %rdx
 	movq	-248(%rbp), %rax
 	movq	24(%rax), %rax
 	movq	(%rax), %rdx
+        
+        #(cycleI * dim + cycleJ) -> %rsi
 	movq	-248(%rbp), %rax
 	movl	32(%rax), %eax          #dim
 	imull	-16(%rbp), %eax         #cycleI * dim
 	addl	-20(%rbp), %eax         #cycleI * dim + cycleK
 	cltq
-	salq	$2, %rax
-	addq	%rax, %rdx
+        movq    %rax, %rsi
+
+        #matrixC.data[cycleI * dim + cycleJ] = imd_ret_0[0];
 	movl	-112(%rbp), %eax
-	movl	%eax, (%rdx)
+	movl	%eax, (%rdx, %rsi, 4)
 
         #matrixC.data[cycleI * dim + cycleJ + 1] = imd_ret_0[1];
-	movq	-248(%rbp), %rax
-	movq	24(%rax), %rax
-	movq	(%rax), %rdx
-	movq	-248(%rbp), %rax
-	movl	32(%rax), %eax
-	imull	-16(%rbp), %eax
-	addl	-20(%rbp), %eax
-	cltq
-	addq	$1, %rax
-	salq	$2, %rax
-	addq	%rax, %rdx
 	movl	-128(%rbp), %eax
-	movl	%eax, (%rdx)
+	movl	%eax, 4(%rdx, %rsi, 4)
 
         #matrixC.data[cycleI * dim + cycleJ + 2] = imd_ret_0[2];
-	movq	-248(%rbp), %rax
-	movq	24(%rax), %rax
-	movq	(%rax), %rdx
-	movq	-248(%rbp), %rax
-	movl	32(%rax), %eax
-	imull	-16(%rbp), %eax
-	addl	-20(%rbp), %eax
-	cltq
-	addq	$2, %rax
-	salq	$2, %rax
-	addq	%rax, %rdx
 	movl	-144(%rbp), %eax
-	movl	%eax, (%rdx)
+	movl	%eax, 8(%rdx, %rsi, 4)
 
         #matrixC.data[cycleI * dim + cycleJ + 3] = imd_ret_0[3];
-	movq	-248(%rbp), %rax
-	movq	24(%rax), %rax
-	movq	(%rax), %rdx
-	movq	-248(%rbp), %rax
-	movl	32(%rax), %eax
-	imull	-16(%rbp), %eax
-	addl	-20(%rbp), %eax
-	cltq
-	addq	$3, %rax
-	salq	$2, %rax
-	addq	%rax, %rdx
 	movl	-160(%rbp), %eax
-	movl	%eax, (%rdx)
+	movl	%eax, 12(%rdx, %rsi, 4)
+
+        pop %rsi
+
 	addl	$4, -20(%rbp)
 	jmp	.L14
 .L13:
