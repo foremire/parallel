@@ -159,10 +159,23 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 .L10:
         
 #register map
-#xmm0 acc_0
-#xmm1 acc_1
-#xmm2 acc_2
-#xmm3 acc_3
+#xmm0 xmm1 xmm2 reserved for arithmetic operation
+#xmm3 oprand_a
+#xmm4 acc_0
+#xmm5 acc_1
+#xmm6 acc_2
+#xmm7 acc_3
+#xmm8 oprand_b_0
+#xmm9 oprand_b_1
+#xmm10 oprand_b_2
+#xmm11 oprand_b_3
+
+        #clear from acc_0 to acc_3 
+        xorps   %xmm4, %xmm4;
+        xorps   %xmm5, %xmm4;
+        xorps   %xmm6, %xmm4;
+        xorps   %xmm7, %xmm4;
+
         xorps   %xmm0, %xmm0
 	movlps	%xmm0, -48(%rbp)        #acc_0
 	movhps	%xmm0, -40(%rbp)
@@ -208,8 +221,8 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 .L15:
 	cmpl	$3, -24(%rbp)           #cycleK < SSE_LENGTH
 	jle	.L13
-       
-        #oprand_a = __builtin_ia32_loadups(&(matrixA.data[cycleI * dim + cycleK]));
+
+        #matrixC.data[cycleI * dim + cycleJ] = imd_ret_0[0];
 	movq	-248(%rbp), %rax
 	movq	24(%rax), %rax
 	movq	(%rax), %rdx
@@ -223,7 +236,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	movl	-112(%rbp), %eax
 	movl	%eax, (%rdx)
 
-        #oprand_a = __builtin_ia32_loadups(&(matrixA.data[cycleI * dim + cycleK]));
+        #matrixC.data[cycleI * dim + cycleJ + 1] = imd_ret_0[1];
 	movq	-248(%rbp), %rax
 	movq	24(%rax), %rax
 	movq	(%rax), %rdx
@@ -238,7 +251,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	movl	-128(%rbp), %eax
 	movl	%eax, (%rdx)
 
-        #oprand_a = __builtin_ia32_loadups(&(matrixA.data[cycleI * dim + cycleK]));
+        #matrixC.data[cycleI * dim + cycleJ + 2] = imd_ret_0[2];
 	movq	-248(%rbp), %rax
 	movq	24(%rax), %rax
 	movq	(%rax), %rdx
@@ -253,7 +266,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	movl	-144(%rbp), %eax
 	movl	%eax, (%rdx)
 
-        #oprand_a = __builtin_ia32_loadups(&(matrixA.data[cycleI * dim + cycleK]));
+        #matrixC.data[cycleI * dim + cycleJ + 3] = imd_ret_0[3];
 	movq	-248(%rbp), %rax
 	movq	24(%rax), %rax
 	movq	(%rax), %rdx
@@ -270,7 +283,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	addl	$4, -20(%rbp)
 	jmp	.L14
 .L13:
-        #matrixC.data[cycleI * dim + cycleJ] = imd_ret_0[0];
+        #imd_ret_0[0] += imd_ret_0[cycleK];
 	movss	-112(%rbp), %xmm1       #oprand_b_0
 	movl	-24(%rbp), %eax         #cycleK
 	cltq                            #%eax->%rax
@@ -278,7 +291,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	addss	%xmm1, %xmm0
 	movss	%xmm0, -112(%rbp)
 
-        #matrixC.data[cycleI * dim + cycleJ + 1] = imd_ret_1[0];
+        #imd_ret_1[0] += imd_ret_1[cycleK];
 	movss	-128(%rbp), %xmm1
 	movl	-24(%rbp), %eax
 	cltq
@@ -286,7 +299,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	addss	%xmm1, %xmm0
 	movss	%xmm0, -128(%rbp)
 
-        #matrixC.data[cycleI * dim + cycleJ + 2] = imd_ret_2[0];
+        #imd_ret_2[0] += imd_ret_2[cycleK];
 	movss	-144(%rbp), %xmm1
 	movl	-24(%rbp), %eax
 	cltq
@@ -294,7 +307,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	addss	%xmm1, %xmm0
 	movss	%xmm0, -144(%rbp)
 
-        #matrixC.data[cycleI * dim + cycleJ + 3] = imd_ret_3[0];
+        #imd_ret_3[0] += imd_ret_3[cycleK];
 	movss	-160(%rbp), %xmm1
 	movl	-24(%rbp), %eax
 	cltq
@@ -305,6 +318,8 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	addl	$1, -24(%rbp)
 	jmp	.L15
 .L12:
+        #oprand_a = __builtin_ia32_loadups(&(matrixA.data[cycleJ * dim + cycleK]));
+
 	movq	-248(%rbp), %rax
 	movq	8(%rax), %rax
 	movq	(%rax), %rdx
@@ -319,6 +334,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	movlps	%xmm0, -176(%rbp)
 	movhps	%xmm0, -168(%rbp)       #%xmm0 -> oprand_a
 
+        #oprand_b_0 = __builtin_ia32_loadups(&(matrixBT.data[cycleJ * dim + cycleK]));
 	movq	-248(%rbp), %rax
 	movq	16(%rax), %rax
 	movq	(%rax), %rdx
@@ -333,6 +349,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	movlps	%xmm0, -192(%rbp)
 	movhps	%xmm0, -184(%rbp)       #%xmm0 -> oprand_b_0
 
+        #oprand_b_0 = __builtin_ia32_loadups(&(matrixBT.data[(cycleJ  + 1)* dim + cycleK]));
 	movq	-248(%rbp), %rax
 	movq	16(%rax), %rax
 	movq	(%rax), %rdx
@@ -349,6 +366,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	movlps	%xmm0, -208(%rbp)
 	movhps	%xmm0, -200(%rbp)       #%xmm0 -> oprand_b_1
 
+        #oprand_b_0 = __builtin_ia32_loadups(&(matrixBT.data[(cycleJ + 2) * dim + cycleK]));
 	movq	-248(%rbp), %rax
 	movq	16(%rax), %rax
 	movq	(%rax), %rdx
@@ -365,6 +383,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	movlps	%xmm0, -224(%rbp)
 	movhps	%xmm0, -216(%rbp)       #%xmm0 -> oprand_b_2
 
+        #oprand_b_0 = __builtin_ia32_loadups(&(matrixBT.data[(cycleJ + 3) * dim + cycleK]));
 	movq	-248(%rbp), %rax
 	movq	16(%rax), %rax
 	movq	(%rax), %rdx
