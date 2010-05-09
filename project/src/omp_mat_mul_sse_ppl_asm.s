@@ -209,10 +209,33 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
         leaq	-160(%rbp), %rax        #oprand_b_3
         movups  %xmm7, (%rax)
 	
-        movl	$1, -24(%rbp)           #cycleK = 1
-.L15:
-	cmpl	$3, -24(%rbp)           #cycleK < SSE_LENGTH
-	jle	.L13
+        #imd_ret_0[0] += imd_ret_0[1] + imd_ret_0[2] + imd_ret_0[3];
+        movss	-112(%rbp), %xmm0
+	addss	-108(%rbp), %xmm0
+	addss	-104(%rbp), %xmm0
+	addss	-100(%rbp), %xmm0
+	movss	%xmm0, -112(%rbp)
+
+        #imd_ret_1[0] += imd_ret_1[cycleK];
+	movss	-128(%rbp), %xmm0
+	addss	-124(%rbp), %xmm0
+	addss	-120(%rbp), %xmm0
+	addss	-116(%rbp), %xmm0
+	movss	%xmm0, -128(%rbp)
+
+        #imd_ret_2[0] += imd_ret_2[cycleK];
+	movss	-144(%rbp), %xmm0
+	addss	-140(%rbp), %xmm0
+	addss	-136(%rbp), %xmm0
+	addss	-132(%rbp), %xmm0
+	movss	%xmm0, -144(%rbp)
+
+        #imd_ret_3[0] += imd_ret_3[cycleK];
+	movss	-160(%rbp), %xmm0
+	addss	-156(%rbp), %xmm0
+	addss	-152(%rbp), %xmm0
+	addss	-148(%rbp), %xmm0
+	movss	%xmm0, -160(%rbp)
 
         push %rsi;
 
@@ -249,41 +272,6 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 
 	addl	$4, -20(%rbp)
 	jmp	.L14
-.L13:
-        #imd_ret_0[0] += imd_ret_0[1] + imd_ret_0[2] + imd_ret_0[3];
-	movss	-112(%rbp), %xmm1       #oprand_b_0
-	movl	-24(%rbp), %eax         #cycleK
-	cltq                            #%eax->%rax
-	movss	-112(%rbp,%rax,4), %xmm0
-	addss	-112(%rbp), %xmm0
-	movss	%xmm0, -112(%rbp)
-
-        #imd_ret_1[0] += imd_ret_1[cycleK];
-	movss	-128(%rbp), %xmm1
-	movl	-24(%rbp), %eax
-	cltq
-	movss	-128(%rbp,%rax,4), %xmm0
-	addss	%xmm1, %xmm0
-	movss	%xmm0, -128(%rbp)
-
-        #imd_ret_2[0] += imd_ret_2[cycleK];
-	movss	-144(%rbp), %xmm1
-	movl	-24(%rbp), %eax
-	cltq
-	movss	-144(%rbp,%rax,4), %xmm0
-	addss	%xmm1, %xmm0
-	movss	%xmm0, -144(%rbp)
-
-        #imd_ret_3[0] += imd_ret_3[cycleK];
-	movss	-160(%rbp), %xmm1
-	movl	-24(%rbp), %eax
-	cltq
-	movss	-160(%rbp,%rax,4), %xmm0
-	addss	%xmm1, %xmm0
-	movss	%xmm0, -160(%rbp)
-
-	addl	$1, -24(%rbp)
-	jmp	.L15
 .L12:
         #store %rsi
         pushq    %rsi
