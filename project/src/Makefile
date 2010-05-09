@@ -20,7 +20,7 @@ LIBS = -lpapi -lgomp -lm
 LIBRARIES = -L$(LIBPATH) $(LIBS)
 
 CC = cc
-CFLAGS = -c -Wall -fopenmp -O0 -msse3 $(INCLUDES)
+CFLAGS = -c -g -Wall -fopenmp -O0 -msse3 $(INCLUDES)
 OUTPUT = results_mm.txt
 RUN = ./$(PROJECT)
 
@@ -32,8 +32,8 @@ $(PROJECT) : $(OBJS) $(ASMS)
 mm.o : mm.c mm.h
 	$(CC) $(CFLAGS) mm.c
 
-omp_mat_mul_sse_ppl_asm.s: omp_mat_mul_sse_ppl_asm.c
-	$(CC) -S $(CFLAGS) omp_mat_mul_sse_ppl_asm.c
+#omp_mat_mul_sse_ppl_asm.s: omp_mat_mul_sse_ppl_asm.c
+#	$(CC) -S $(CFLAGS) omp_mat_mul_sse_ppl_asm.c
 
 all : $(PROJECT)
 
@@ -44,4 +44,3 @@ clean :
 	rm -f *.o
 	rm -f $(PROJECT)
 	rm -f $(OUTPUT)
-	rm -f *.s
