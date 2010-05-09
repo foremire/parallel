@@ -344,8 +344,14 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
         mulps   %xmm11, %xmm15
 
         addps   %xmm12, %xmm4
+
+        #acc_1 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_1));
         addps   %xmm13, %xmm5
+
+        #acc_2 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_2));
         addps   %xmm14, %xmm6
+
+        #acc_3 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_3));
         addps   %xmm15, %xmm7
 
 	addl	$4, -24(%rbp)
