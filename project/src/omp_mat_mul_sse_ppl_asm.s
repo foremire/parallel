@@ -172,9 +172,9 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 
         #clear from acc_0 to acc_3 
         xorps   %xmm4, %xmm4;
-        xorps   %xmm5, %xmm4;
-        xorps   %xmm6, %xmm4;
-        xorps   %xmm7, %xmm4;
+        xorps   %xmm5, %xmm5;
+        xorps   %xmm6, %xmm6;
+        xorps   %xmm7, %xmm7;
 
         xorps   %xmm0, %xmm0
 	movlps	%xmm0, -48(%rbp)        #acc_0
@@ -379,7 +379,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
         
         movups	(%rax), %xmm9
 
-        #oprand_b_0 = __builtin_ia32_loadups(&(matrixBT.data[(cycleJ + 2) * dim + cycleK]));
+        #oprand_b_2 = __builtin_ia32_loadups(&(matrixBT.data[(cycleJ + 2) * dim + cycleK]));
         add     %rcx, %rsi
         mov     %rsi, %rax
 
@@ -391,7 +391,7 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
         
         movups	(%rax), %xmm10
 
-        #oprand_b_0 = __builtin_ia32_loadups(&(matrixBT.data[(cycleJ + 3) * dim + cycleK]));
+        #oprand_b_3 = __builtin_ia32_loadups(&(matrixBT.data[(cycleJ + 3) * dim + cycleK]));
         add     %rcx, %rsi
         mov     %rsi, %rax
 
@@ -408,50 +408,38 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
         pop      %rsi
 
         #acc_0 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_0));
-	xorps	%xmm0, %xmm0
-	movlps	-192(%rbp), %xmm0
-	movhps	-184(%rbp), %xmm0
-	xorps	%xmm1, %xmm1
-	movlps	-176(%rbp), %xmm1
-	movhps	-168(%rbp), %xmm1
-	mulps	%xmm1, %xmm0
-	addps	-48(%rbp), %xmm0
+        movups  %xmm3, %xmm1
+        mulps   %xmm8, %xmm1
+        addps   %xmm1, %xmm4
+
+        movups  %xmm4, %xmm0
 	movlps	%xmm0, -48(%rbp)
 	movhps	%xmm0, -40(%rbp)
 
         #acc_1 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_1));
-	xorps	%xmm0, %xmm0
-	movlps	-208(%rbp), %xmm0
-	movhps	-200(%rbp), %xmm0
-	xorps	%xmm1, %xmm1
-	movlps	-176(%rbp), %xmm1
-	movhps	-168(%rbp), %xmm1
-	mulps	%xmm1, %xmm0
-	addps	-64(%rbp), %xmm0
+        movups  %xmm3, %xmm1
+        mulps   %xmm9, %xmm1
+        addps   %xmm1, %xmm5
+
+        movups  %xmm5, %xmm0
 	movlps	%xmm0, -64(%rbp)
 	movhps	%xmm0, -56(%rbp)
 
         #acc_2 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_2));
-	xorps	%xmm0, %xmm0
-	movlps	-224(%rbp), %xmm0
-	movhps	-216(%rbp), %xmm0
-	xorps	%xmm1, %xmm1
-	movlps	-176(%rbp), %xmm1
-	movhps	-168(%rbp), %xmm1
-	mulps	%xmm1, %xmm0
-	addps	-80(%rbp), %xmm0
+        movups  %xmm3, %xmm1
+        mulps   %xmm10, %xmm1
+        addps   %xmm1, %xmm6
+
+        movups  %xmm6, %xmm0
 	movlps	%xmm0, -80(%rbp)
 	movhps	%xmm0, -72(%rbp)
 
         #acc_3 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_3));
-	xorps	%xmm0, %xmm0
-	movlps	-240(%rbp), %xmm0
-	movhps	-232(%rbp), %xmm0
-	xorps	%xmm1, %xmm1
-	movlps	-176(%rbp), %xmm1
-	movhps	-168(%rbp), %xmm1
-	mulps	%xmm1, %xmm0
-	addps	-96(%rbp), %xmm0
+        movups  %xmm3, %xmm1
+        mulps   %xmm11, %xmm1
+        addps   %xmm1, %xmm7
+
+        movups  %xmm7, %xmm0
 	movlps	%xmm0, -96(%rbp)
 	movhps	%xmm0, -88(%rbp)
 	addl	$4, -24(%rbp)
