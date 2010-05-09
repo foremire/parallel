@@ -6,7 +6,7 @@
  *
 */
 
-#define MATRIX_SIZE 1024
+#define MATRIX_SIZE 512
 #define PROCESSOR_NUM 32
 #define SERIAL_TIME 19.0
 
@@ -41,9 +41,10 @@ void init_matrix(matrix * mat, int xDim, int yDim, int random);
 void omp_mat_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC);
 void omp_mat_mul_div(matrix matrixA, matrix matrixB, matrix matrixC);
 void omp_mat_mul_transpose(matrix matrixA, matrix matrixB, matrix matrixC);
-void omp_mat_mul_transpose_sse(matrix matrixA, matrix matrixB, matrix matrixC);
-void omp_mat_mul_transpose_sse_ppl(matrix matrixA, matrix matrixB, matrix matrixC);
-void omp_mat_mul_transpose_sse_ppl2(matrix matrixA, matrix matrixB, matrix matrixC);
+void omp_mat_mul_sse(matrix matrixA, matrix matrixB, matrix matrixC);
+void omp_mat_mul_sse_ppl(matrix matrixA, matrix matrixB, matrix matrixC);
+void omp_mat_mul_sse_ppl2(matrix matrixA, matrix matrixB, matrix matrixC);
+void omp_mat_mul_sse_ppl_asm(matrix matrixA, matrix matrixB, matrix matrixC);
 
 void serial_mat_mul(matrix matrixA, matrix matrixB, matrix matrixC);
 
