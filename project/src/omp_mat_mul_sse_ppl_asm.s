@@ -250,12 +250,12 @@ omp_mat_mul_sse_ppl_asm.omp_fn.0:
 	addl	$4, -20(%rbp)
 	jmp	.L14
 .L13:
-        #imd_ret_0[0] += imd_ret_0[cycleK];
+        #imd_ret_0[0] += imd_ret_0[1] + imd_ret_0[2] + imd_ret_0[3];
 	movss	-112(%rbp), %xmm1       #oprand_b_0
 	movl	-24(%rbp), %eax         #cycleK
 	cltq                            #%eax->%rax
 	movss	-112(%rbp,%rax,4), %xmm0
-	addss	%xmm1, %xmm0
+	addss	-112(%rbp), %xmm0
 	movss	%xmm0, -112(%rbp)
 
         #imd_ret_1[0] += imd_ret_1[cycleK];
