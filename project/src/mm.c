@@ -59,7 +59,7 @@ int main( int argc, char *argv[] )
   //omp_mat_mul_sse(matrixA, matrixB, matrixC);
   //omp_mat_mul_sse_ppl(matrixA, matrixB, matrixC);
   //omp_mat_mul_sse_ppl2(matrixA, matrixB, matrixC);
-  omp_mat_mul_sse_ppl_asm(matrixA, matrixB, matrixC);
+  //omp_mat_mul_sse_ppl_asm(matrixA, matrixB, matrixC);
   t_omp = get_duration(__start);
 
   //sleep(2);
@@ -187,6 +187,7 @@ void omp_mat_mul_div(matrix matrixA, matrix matrixB, matrix matrixC){
   int thread_id = 0;
   int num_per_thread = dim / PROCESSOR_NUM;
    
+  omp_set_num_threads(PROCESSOR_NUM);
   // calculate the sum in parallel
   #pragma omp parallel shared (matrixA, matrixB, matrixC, num_per_thread)\
     private (thread_id)
