@@ -53,11 +53,11 @@ int main( int argc, char *argv[] )
 
   // do it in parallel way
   gettimeofday(&__start, NULL);
-  omp_mat_mul_baseline(matrixA, matrixB, matrixC);
+  //omp_mat_mul_baseline(matrixA, matrixB, matrixC);
   //omp_mat_mul_div(matrixA, matrixB, matrixC);
   //omp_mat_mul_transpose(matrixA, matrixB, matrixC);
   //omp_mat_mul_sse(matrixA, matrixB, matrixC);
-  //omp_mat_mul_sse_ppl(matrixA, matrixB, matrixC);
+  omp_mat_mul_sse_ppl(matrixA, matrixB, matrixC);
   //omp_mat_mul_sse_ppl2(matrixA, matrixB, matrixC);
   //omp_mat_mul_sse_ppl_asm(matrixA, matrixB, matrixC);
   t_omp = get_duration(__start);
@@ -66,7 +66,7 @@ int main( int argc, char *argv[] )
 
   // do it in serial way
   gettimeofday(&__start, NULL);
-  serial_mat_mul(matrixA, matrixB, matrixCValid);
+  //serial_mat_mul(matrixA, matrixB, matrixCValid);
   t_serial = get_duration(__start);
   //t_serial = SERIAL_TIME;
  
@@ -77,7 +77,7 @@ int main( int argc, char *argv[] )
   printf("Speed Up:%3.6f\n", t_serial/t_omp);
 
   // validate the result
-  validate_result(matrixC, matrixCValid);
+  //validate_result(matrixC, matrixCValid);
 
   double cycle_p = (double) parallel_values[0];
   double time_p = cycle_p / 2.33e9 / (double) PROCESSOR_NUM;
@@ -182,6 +182,7 @@ void omp_mat_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC){
 
       }
     }
+
     PAPI_stop(parallel_event_set, thread_parallel_values);
     PAPI_cleanup_eventset(parallel_event_set);
     PAPI_destroy_eventset(&parallel_event_set);
@@ -206,6 +207,26 @@ void omp_mat_mul_div(matrix matrixA, matrix matrixB, matrix matrixC){
   #pragma omp parallel shared (matrixA, matrixB, matrixC, num_per_thread)\
     private (thread_id)
   {
+    // init PAPI
+    int parallel_event_set = PAPI_NULL;
+    long_long thread_parallel_values[EVENT_SET_SIZE];
+
+    if(PAPI_OK != PAPI_create_eventset(&parallel_event_set)){
+      printf( "Error creating the event set\n" );
+      exit(-1);
+    }
+    
+    if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_TOT_CYC)){
+      printf( "Error on add_event\n" );
+      exit(-1);
+    }
+    if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_FP_OPS)){
+      printf( "Error on add_event\n" );
+      exit(-1);
+    }
+   
+    PAPI_start(parallel_event_set);
+
     thread_id = omp_get_thread_num();
     int start = num_per_thread * thread_id;
     int end = start + num_per_thread;
@@ -227,6 +248,15 @@ void omp_mat_mul_div(matrix matrixA, matrix matrixB, matrix matrixC){
 
       }
     }
+
+    PAPI_stop(parallel_event_set, thread_parallel_values);
+    PAPI_cleanup_eventset(parallel_event_set);
+    PAPI_destroy_eventset(&parallel_event_set);
+    #pragma omp atomic
+    parallel_values[0] += thread_parallel_values[0];
+    #pragma omp atomic
+    parallel_values[1] += thread_parallel_values[1];
+
   }
 }
 
@@ -258,6 +288,27 @@ void omp_mat_mul_transpose(matrix matrixA, matrix matrixB, matrix matrixC){
   #pragma omp parallel shared (matrixA, matrixBT, matrixC, num_per_thread)\
     private (thread_id)
   {
+
+    // init PAPI
+    int parallel_event_set = PAPI_NULL;
+    long_long thread_parallel_values[EVENT_SET_SIZE];
+
+    if(PAPI_OK != PAPI_create_eventset(&parallel_event_set)){
+      printf( "Error creating the event set\n" );
+      exit(-1);
+    }
+    
+    if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_TOT_CYC)){
+      printf( "Error on add_event\n" );
+      exit(-1);
+    }
+    if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_FP_OPS)){
+      printf( "Error on add_event\n" );
+      exit(-1);
+    }
+   
+    PAPI_start(parallel_event_set);
+
     thread_id = omp_get_thread_num();
     int start = num_per_thread * thread_id;
     int end = start + num_per_thread;
@@ -280,6 +331,16 @@ void omp_mat_mul_transpose(matrix matrixA, matrix matrixB, matrix matrixC){
 
       }
     }
+
+
+    PAPI_stop(parallel_event_set, thread_parallel_values);
+    PAPI_cleanup_eventset(parallel_event_set);
+    PAPI_destroy_eventset(&parallel_event_set);
+    #pragma omp atomic
+    parallel_values[0] += thread_parallel_values[0];
+    #pragma omp atomic
+    parallel_values[1] += thread_parallel_values[1];
+
   }
   
   SAFE_FREE(matrixBT.data);
@@ -314,6 +375,27 @@ void omp_mat_mul_sse(matrix matrixA, matrix matrixB, matrix matrixC){
   #pragma omp parallel shared (matrixA, matrixBT, matrixC, num_per_thread)\
     private (thread_id)
   {
+
+    // init PAPI
+    int parallel_event_set = PAPI_NULL;
+    long_long thread_parallel_values[EVENT_SET_SIZE];
+
+    if(PAPI_OK != PAPI_create_eventset(&parallel_event_set)){
+      printf( "Error creating the event set\n" );
+      exit(-1);
+    }
+    
+    if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_TOT_CYC)){
+      printf( "Error on add_event\n" );
+      exit(-1);
+    }
+    if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_FP_OPS)){
+      printf( "Error on add_event\n" );
+      exit(-1);
+    }
+   
+    PAPI_start(parallel_event_set);
+
     thread_id = omp_get_thread_num();
     int start = num_per_thread * thread_id;
     int end = start + num_per_thread;
@@ -348,6 +430,15 @@ void omp_mat_mul_sse(matrix matrixA, matrix matrixB, matrix matrixC){
         matrixC.data[cycleI * dim + cycleJ] = imd_ret[0];
       }
     }
+
+    PAPI_stop(parallel_event_set, thread_parallel_values);
+    PAPI_cleanup_eventset(parallel_event_set);
+    PAPI_destroy_eventset(&parallel_event_set);
+    #pragma omp atomic
+    parallel_values[0] += thread_parallel_values[0];
+    #pragma omp atomic
+    parallel_values[1] += thread_parallel_values[1];
+
   }
   
   SAFE_FREE(matrixBT.data);
@@ -383,6 +474,27 @@ void omp_mat_mul_sse_ppl(matrix matrixA, matrix matrixB, matrix matrixC){
   #pragma omp parallel shared (matrixA, matrixBT, matrixC, num_per_thread)\
     private (thread_id)
   {
+
+    // init PAPI
+    int parallel_event_set = PAPI_NULL;
+    long_long thread_parallel_values[EVENT_SET_SIZE];
+
+    if(PAPI_OK != PAPI_create_eventset(&parallel_event_set)){
+      printf( "Error creating the event set\n" );
+      exit(-1);
+    }
+    
+    if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_TOT_CYC)){
+      printf( "Error on add_event\n" );
+      exit(-1);
+    }
+    if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_FP_OPS)){
+      printf( "Error on add_event\n" );
+      exit(-1);
+    }
+   
+    PAPI_start(parallel_event_set);
+
     thread_id = omp_get_thread_num();
     int start = num_per_thread * thread_id;
     int end = start + num_per_thread;
@@ -453,6 +565,15 @@ void omp_mat_mul_sse_ppl(matrix matrixA, matrix matrixB, matrix matrixC){
         matrixC.data[cycleI * dim + cycleJ + 3] = imd_ret_3[0];
       }
     }
+
+    PAPI_stop(parallel_event_set, thread_parallel_values);
+    PAPI_cleanup_eventset(parallel_event_set);
+    PAPI_destroy_eventset(&parallel_event_set);
+    #pragma omp atomic
+    parallel_values[0] += thread_parallel_values[0];
+    #pragma omp atomic
+    parallel_values[1] += thread_parallel_values[1];
+
   }
   
   SAFE_FREE(matrixBT.data);
@@ -488,6 +609,27 @@ void omp_mat_mul_sse_ppl2(matrix matrixA, matrix matrixB, matrix matrixC){
   #pragma omp parallel shared (matrixA, matrixBT, matrixC, num_per_thread)\
     private (thread_id)
   {
+
+    // init PAPI
+    int parallel_event_set = PAPI_NULL;
+    long_long thread_parallel_values[EVENT_SET_SIZE];
+
+    if(PAPI_OK != PAPI_create_eventset(&parallel_event_set)){
+      printf( "Error creating the event set\n" );
+      exit(-1);
+    }
+    
+    if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_TOT_CYC)){
+      printf( "Error on add_event\n" );
+      exit(-1);
+    }
+    if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_FP_OPS)){
+      printf( "Error on add_event\n" );
+      exit(-1);
+    }
+   
+    PAPI_start(parallel_event_set);
+
     thread_id = omp_get_thread_num();
     int start = num_per_thread * thread_id;
     int end = start + num_per_thread;
@@ -589,6 +731,15 @@ void omp_mat_mul_sse_ppl2(matrix matrixA, matrix matrixB, matrix matrixC){
         matrixC.data[cycleI * dim + cycleJ + 1] = imd_ret_1[0];
       }
     }
+
+    PAPI_stop(parallel_event_set, thread_parallel_values);
+    PAPI_cleanup_eventset(parallel_event_set);
+    PAPI_destroy_eventset(&parallel_event_set);
+    #pragma omp atomic
+    parallel_values[0] += thread_parallel_values[0];
+    #pragma omp atomic
+    parallel_values[1] += thread_parallel_values[1];
+
   }
   
   SAFE_FREE(matrixBT.data);
