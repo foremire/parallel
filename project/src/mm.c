@@ -75,9 +75,20 @@ int main( int argc, char *argv[] )
   printf("Serial Time:%3.6f\n", t_serial);
   printf("Parallel Time:%3.6f\n", t_omp);
   printf("Speed Up:%3.6f\n", t_serial/t_omp);
-  
+
   // validate the result
   validate_result(matrixC, matrixCValid);
+
+  double cycle_p = (double) parallel_values[0];
+  double time_p = cycle_p / 2.33e9 / (double) PROCESSOR_NUM;
+  double flop_p = (double) parallel_values[1];
+  double mflops_p = flop_p / time_p / 1.0e6;
+
+  printf("\nPAPI Parallel:\n");
+  printf("Total Cycles (Millions) = %3.3f\n", cycle_p / 1.0e6);
+  printf("Total Time (Seconds) = %3.3f\n", time_p);
+  printf("Total Flops (Millions) = %3.3f\n", flop_p / 1.0e6);
+  printf("MFOLPS = %3.3f\n", mflops_p);
 
   SAFE_FREE(matrixA.data);
   SAFE_FREE(matrixB.data);
@@ -140,6 +151,8 @@ void omp_mat_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC){
   {
     // init PAPI
     int parallel_event_set = PAPI_NULL;
+    long_long thread_parallel_values[EVENT_SET_SIZE];
+
     if(PAPI_OK != PAPI_create_eventset(&parallel_event_set)){
       printf( "Error creating the event set\n" );
       exit(-1);
@@ -169,9 +182,13 @@ void omp_mat_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC){
 
       }
     }
-    PAPI_stop(parallel_event_set, parallel_values);
+    PAPI_stop(parallel_event_set, thread_parallel_values);
     PAPI_cleanup_eventset(parallel_event_set);
     PAPI_destroy_eventset(&parallel_event_set);
+    #pragma omp atomic
+    parallel_values[0] += thread_parallel_values[0];
+    #pragma omp atomic
+    parallel_values[1] += thread_parallel_values[1];
   }
 }
 
