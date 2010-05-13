@@ -5,8 +5,8 @@ set xlabel "Matrix Size"
 set ylabel "L2 Cache Misses (Millions)"
 set ytics border in scale 1,0.5 mirror norotate  offset character 0, 0, 0 
 set ytics (0.0000, 250.0000, 500.0000, 750.0000, 1000.0000, 1250.00, 1500.00, 1750.00)
-set xrange [ 0.00 : 3500.0000 ] noreverse nowriteback
+set xrange [ 0.00 : 2500.0000 ] noreverse nowriteback
 set yrange [ 0.00 : 1750.00 ] noreverse nowriteback
 set lmargin 12
 set rmargin 4
-plot 'l2cachemiss.data' using 1:2 title "SSE + Pipeline" with lines lt 1 lw 3
+plot 'l2cachemiss.data' using 1:2 title "Baseline" with lines lt 1 lw 3, '' using 1:3 title "Transpose" with lines lt 2 lw 3, '' using 1:4 title "SSE + Pipeline" with lines lt 3 lw 3

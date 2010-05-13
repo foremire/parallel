@@ -281,6 +281,10 @@ when the threads exit. When the matrix size was larger than 1024, the performanc
 decreased since cache misses and invalidation increased dramatically.
 
 \subsection{MFLOPS}
+The MFLOPS with different matrix sizes was measured with 32 threads, shown in 
+Figure~\ref{fig:mflops}. MFLOPS reaches maximum when the matrix size is between
+256 and 1024. As the matrix size increases, the MFLOPS decrease as cache misses
+increase.
 \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=.7\textwidth, angle=0]{mflops.png}
@@ -289,19 +293,22 @@ decreased since cache misses and invalidation increased dramatically.
 \end{figure}
 
 \subsection{Cache Miss}
+The L2 Cache Miss with different matrix sizes was measured with 32 threads, 
+shown in Figure~\ref{fig:l2cachemiss}. Intuitively the L2 cache misses increase
+as matrix size increases. We found an interesting fact that when the matrix size
+increases from 1792 to 2048, the L2 cache miss increased dramatically for the 
+baseline method ( in which matrix transpose was not applied ). We infer that 
+2048 in the threshold. Once passed the threshold, the calculation of each element 
+in matrix $\mathbf{C}$ will cause the invalidation of each cache line which is 
+a great hazard to the performance. After the transpose of matrix $\mathbf{B}$ 
+is applied, we see the decrease of L2 cache misses.
+
 \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=.7\textwidth, angle=0]{l2cachemiss.png}
 		\caption{\label{fig:l2cachemiss}L2 cache misses with different matrix sizes}
 	\end{center}
 \end{figure}
-
-\subsection{Analysis}
-Based on the observations in the results, we can draw the following interesting 
-conclusions:
-\begin{enumerate}
-\item ILP performs best.
-\end{enumerate}
 
 \section{Conclusion}
 
