@@ -80,15 +80,16 @@ int main( int argc, char *argv[] )
   //validate_result(matrixC, matrixCValid);
 
   double cycle_p = (double) parallel_values[0];
-  double time_p = cycle_p / 2.33e9 / (double) PROCESSOR_NUM;
+  //double time_p = cycle_p / 2.33e9 / (double) PROCESSOR_NUM;
+  double time_p = cycle_p / 2.33e9;
   double flop_p = (double) parallel_values[1];
-  double mflops_p = flop_p / time_p / 1.0e6;
+  double mflops_p = flop_p / time_p / 1.0e9;
 
   printf("\nPAPI Parallel:\n");
-  printf("Total Cycles (Millions) = %3.3f\n", cycle_p / 1.0e6);
-  printf("Total Time (Seconds) = %3.3f\n", time_p);
-  printf("Total Flops (Millions) = %3.3f\n", flop_p / 1.0e6);
-  printf("MFOLPS = %3.3f\n", mflops_p);
+  printf("Total Cycles (Millions):%3.3f\n", cycle_p / 1.0e6);
+  printf("Total Time (Seconds):%3.3f\n", time_p);
+  printf("Total Flops (Millions):%3.3f\n", flop_p / 1.0e6);
+  printf("MFLOPS:%3.3f\n", mflops_p);
 
   SAFE_FREE(matrixA.data);
   SAFE_FREE(matrixB.data);
