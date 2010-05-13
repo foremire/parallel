@@ -1,0 +1,49 @@
+\usepackage{amsmath}      % need for subequations
+\usepackage{graphicx}     % need for figures
+\usepackage{verbatim}     % useful for program listings
+\usepackage{color}        % use if color is used in text
+\usepackage{subfigure}    % use for side-by-side figures
+\usepackage{hyperref}     % use for hypertext links, including those to external documents and URLs
+\usepackage{multicol}     % multi-column typeset support
+\usepackage[cm]{fullpage} % extend the page space
+\usepackage{floatrow}
+\usepackage{multirow}
+
+%some tricks for float figure and table in multicol environment
+\makeatletter
+\newenvironment{tablehere}
+  {\def\@captype{table}}
+  {}
+
+\newenvironment{figurehere}
+  {\def\@captype{figure}}
+  {}
+\makeatother
+
+
+% don't need the following. simply use defaults
+\setlength{\baselineskip}{16.0pt}    % 16 pt usual spacing between lines
+
+\setlength{\parskip}{3pt plus 2pt}
+\setlength{\parindent}{20pt}
+\setlength{\oddsidemargin}{0.5cm}
+\setlength{\evensidemargin}{0.5cm}
+\setlength{\marginparsep}{0.75cm}
+\setlength{\marginparwidth}{2.5cm}
+\setlength{\marginparpush}{1.0cm}
+\setlength{\textwidth}{150mm}
+
+\hypersetup{
+	%pdfborder = {0 0 0 0},
+	colorlinks = true,     % false: boxed links; true: colored links
+	linkcolor=blue,				 % color of internal links
+	citecolor=green,        % color of links to bibliography
+  filecolor=magenta,      % color of file links
+  urlcolor=cyan           % color of external links
+}
+
+\begin{comment}
+\pagestyle{empty} 	% use if page numbers not needed
+\end{comment}
+
+% above is the preamble
