@@ -148,11 +148,115 @@ code is shown as below:
 	movups	(%rax), %xmm0
 	movlps	%xmm0, -192(%rbp)
 	movhps	%xmm0, -184(%rbp)       #%xmm0 -> oprand_b_0
-
-
 \end{verbatim}
 \normalsize
 
+We also found that gcc uses the registers in a very conservative way.
+In most cases, gcc only uses \texttt{xmm0} and \texttt{xmm1}, while
+there are 16 \texttt{xmm} registers in total. See the following example:
+
+\scriptsize
+\begin{verbatim}
+#acc_0 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_0));
+	xorps	%xmm0, %xmm0
+	movlps	-192(%rbp), %xmm0
+	movhps	-184(%rbp), %xmm0
+	xorps	%xmm1, %xmm1
+	movlps	-176(%rbp), %xmm1
+	movhps	-168(%rbp), %xmm1
+	mulps	%xmm1, %xmm0
+	addps	-48(%rbp), %xmm0
+	movlps	%xmm0, -48(%rbp)
+	movhps	%xmm0, -40(%rbp)
+
+#acc_1 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_1));
+	xorps	%xmm0, %xmm0
+	movlps	-208(%rbp), %xmm0
+	movhps	-200(%rbp), %xmm0
+	xorps	%xmm1, %xmm1
+	movlps	-176(%rbp), %xmm1
+	movhps	-168(%rbp), %xmm1
+	mulps	%xmm1, %xmm0
+	addps	-64(%rbp), %xmm0
+	movlps	%xmm0, -64(%rbp)
+	movhps	%xmm0, -56(%rbp)
+
+#acc_2 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_2));
+	xorps	%xmm0, %xmm0
+	movlps	-224(%rbp), %xmm0
+	movhps	-216(%rbp), %xmm0
+	xorps	%xmm1, %xmm1
+	movlps	-176(%rbp), %xmm1
+	movhps	-168(%rbp), %xmm1
+	mulps	%xmm1, %xmm0
+	addps	-80(%rbp), %xmm0
+	movlps	%xmm0, -80(%rbp)
+	movhps	%xmm0, -72(%rbp)
+
+#acc_3 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_3));
+	xorps	%xmm0, %xmm0
+	movlps	-240(%rbp), %xmm0
+	movhps	-232(%rbp), %xmm0
+	xorps	%xmm1, %xmm1
+	movlps	-176(%rbp), %xmm1
+	movhps	-168(%rbp), %xmm1
+	mulps	%xmm1, %xmm0
+	addps	-96(%rbp), %xmm0
+	movlps	%xmm0, -96(%rbp)
+	movhps	%xmm0, -88(%rbp)
+\end{verbatim}
+\normalsize
+
+Obviously gcc only use gcc only uses \texttt{xmm0} and \texttt{xmm1}
+for SSE instructions and other variables are stored in memory. Each
+time it loads data from memory to \texttt{xmm} register, do the 
+calculation( multiplication, addition ) and stores data from 
+\texttt{xmm} register to memory, which is far beyond our expectation.
+After the optimization, each intermediate vector variable 
+(\texttt{acc\_0}, \texttt{acc\_1}, \texttt{oprand\_b\_0}, 
+\texttt{oprand\_b\_1} etc.) were bind to dedicated \texttt{xmm} 
+registers and the data exchanges between memory and registers 
+were saved greatly.
+
+\scriptsize
+\begin{verbatim}
+#register map
+#xmm0 xmm1 xmm2 reserved for arithmetic operation
+#xmm3 oprand_a
+#xmm4 acc_0
+#xmm5 acc_1
+#xmm6 acc_2
+#xmm7 acc_3
+#xmm8 oprand_b_0
+#xmm9 oprand_b_1
+#xmm10 oprand_b_2
+#xmm11 oprand_b_3
+
+#acc_0 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_0));
+movups  %xmm3, %xmm12
+movups  %xmm3, %xmm13
+movups  %xmm3, %xmm14
+movups  %xmm3, %xmm15
+
+mulps   %xmm8, %xmm12
+mulps   %xmm9, %xmm13
+mulps   %xmm10, %xmm14
+mulps   %xmm11, %xmm15
+
+addps   %xmm12, %xmm4
+
+#acc_1 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_1));
+addps   %xmm13, %xmm5
+
+#acc_2 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_2));
+addps   %xmm14, %xmm6
+
+#acc_3 = __builtin_ia32_addps(acc_0, __builtin_ia32_mulps(oprand_a, oprand_b_3));
+addps   %xmm15, %xmm7
+\end{verbatim}
+\normalsize
+
+In the above optimized code, the calculation was fully pipelined.
 
 \section{Experiment Results}
 \subsection{Experiment Setup}
