@@ -66,7 +66,7 @@ int main( int argc, char *argv[] )
 
   // do it in serial way
   gettimeofday(&__start, NULL);
-  //serial_mat_mul(matrixA, matrixB, matrixCValid);
+  serial_mat_mul(matrixA, matrixB, matrixCValid);
   t_serial = get_duration(__start);
   //t_serial = SERIAL_TIME;
  
@@ -77,19 +77,21 @@ int main( int argc, char *argv[] )
   printf("Speed Up:%3.6f\n", t_serial/t_omp);
 
   // validate the result
-  //validate_result(matrixC, matrixCValid);
+  validate_result(matrixC, matrixCValid);
 
   double cycle_p = (double) parallel_values[0];
   //double time_p = cycle_p / 2.33e9 / (double) PROCESSOR_NUM;
-  double time_p = cycle_p / 2.33e9;
+  double time_p = cycle_p / 2.33e9 / 8.00;
   double flop_p = (double) parallel_values[1];
-  double mflops_p = flop_p / time_p / 1.0e9;
+  double mflops_p = flop_p / time_p / 1.0e6;
+  double cachemiss_p = (double) parallel_values[2] / 1.0e6;
 
   printf("\nPAPI Parallel:\n");
   printf("Total Cycles (Millions):%3.3f\n", cycle_p / 1.0e6);
   printf("Total Time (Seconds):%3.3f\n", time_p);
   printf("Total Flops (Millions):%3.3f\n", flop_p / 1.0e6);
   printf("MFLOPS:%3.3f\n", mflops_p);
+  printf("L2 Cache Misses (Millions):%3.3f\n", cachemiss_p);
 
   SAFE_FREE(matrixA.data);
   SAFE_FREE(matrixB.data);
@@ -167,6 +169,10 @@ void omp_mat_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC){
       printf( "Error on add_event\n" );
       exit(-1);
     }
+    if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_L2_TCM)){
+      printf( "Error on add_event\n" );
+      exit(-1);
+    }
    
     PAPI_start(parallel_event_set);
 
@@ -191,6 +197,8 @@ void omp_mat_mul_baseline(matrix matrixA, matrix matrixB, matrix matrixC){
     parallel_values[0] += thread_parallel_values[0];
     #pragma omp atomic
     parallel_values[1] += thread_parallel_values[1];
+    #pragma omp atomic
+    parallel_values[2] += thread_parallel_values[2];
   }
 }
 
@@ -222,6 +230,10 @@ void omp_mat_mul_div(matrix matrixA, matrix matrixB, matrix matrixC){
       exit(-1);
     }
     if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_FP_OPS)){
+      printf( "Error on add_event\n" );
+      exit(-1);
+    }
+    if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_L2_TCM)){
       printf( "Error on add_event\n" );
       exit(-1);
     }
@@ -257,6 +269,8 @@ void omp_mat_mul_div(matrix matrixA, matrix matrixB, matrix matrixC){
     parallel_values[0] += thread_parallel_values[0];
     #pragma omp atomic
     parallel_values[1] += thread_parallel_values[1];
+    #pragma omp atomic
+    parallel_values[2] += thread_parallel_values[2];
 
   }
 }
@@ -307,6 +321,10 @@ void omp_mat_mul_transpose(matrix matrixA, matrix matrixB, matrix matrixC){
       printf( "Error on add_event\n" );
       exit(-1);
     }
+    if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_L2_TCM)){
+      printf( "Error on add_event\n" );
+      exit(-1);
+    }
    
     PAPI_start(parallel_event_set);
 
@@ -341,6 +359,8 @@ void omp_mat_mul_transpose(matrix matrixA, matrix matrixB, matrix matrixC){
     parallel_values[0] += thread_parallel_values[0];
     #pragma omp atomic
     parallel_values[1] += thread_parallel_values[1];
+    #pragma omp atomic
+    parallel_values[2] += thread_parallel_values[2];
 
   }
   
@@ -394,6 +414,10 @@ void omp_mat_mul_sse(matrix matrixA, matrix matrixB, matrix matrixC){
       printf( "Error on add_event\n" );
       exit(-1);
     }
+    if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_L2_TCM)){
+      printf( "Error on add_event\n" );
+      exit(-1);
+    }
    
     PAPI_start(parallel_event_set);
 
@@ -439,6 +463,8 @@ void omp_mat_mul_sse(matrix matrixA, matrix matrixB, matrix matrixC){
     parallel_values[0] += thread_parallel_values[0];
     #pragma omp atomic
     parallel_values[1] += thread_parallel_values[1];
+    #pragma omp atomic
+    parallel_values[2] += thread_parallel_values[2];
 
   }
   
@@ -490,6 +516,10 @@ void omp_mat_mul_sse_ppl(matrix matrixA, matrix matrixB, matrix matrixC){
       exit(-1);
     }
     if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_FP_OPS)){
+      printf( "Error on add_event\n" );
+      exit(-1);
+    }
+    if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_L2_TCM)){
       printf( "Error on add_event\n" );
       exit(-1);
     }
@@ -574,6 +604,8 @@ void omp_mat_mul_sse_ppl(matrix matrixA, matrix matrixB, matrix matrixC){
     parallel_values[0] += thread_parallel_values[0];
     #pragma omp atomic
     parallel_values[1] += thread_parallel_values[1];
+    #pragma omp atomic
+    parallel_values[2] += thread_parallel_values[2];
 
   }
   
@@ -625,6 +657,10 @@ void omp_mat_mul_sse_ppl2(matrix matrixA, matrix matrixB, matrix matrixC){
       exit(-1);
     }
     if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_FP_OPS)){
+      printf( "Error on add_event\n" );
+      exit(-1);
+    }
+    if(PAPI_OK != PAPI_add_event(parallel_event_set, PAPI_L2_TCM)){
       printf( "Error on add_event\n" );
       exit(-1);
     }
@@ -740,6 +776,8 @@ void omp_mat_mul_sse_ppl2(matrix matrixA, matrix matrixB, matrix matrixC){
     parallel_values[0] += thread_parallel_values[0];
     #pragma omp atomic
     parallel_values[1] += thread_parallel_values[1];
+    #pragma omp atomic
+    parallel_values[2] += thread_parallel_values[2];
 
   }
   
