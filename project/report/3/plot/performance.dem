@@ -1,0 +1,12 @@
+#set term post enh
+#set output "performance.eps"
+set title "Performance Comparasion"
+set xlabel "Matrix Size"
+set ylabel "Speed Up"
+set ytics border in scale 1,0.5 mirror norotate  offset character 0, 0, 0 
+set ytics (0.0000, 20.0000, 40.0000, 60.0000, 80.0000, 100.00)
+set xrange [ 256.00 : 2048.0000 ] noreverse nowriteback
+set yrange [ 0.00 : 100.00 ] noreverse nowriteback
+set lmargin 9
+set rmargin 2
+plot 'performance.data' using 1:2 title "Baseline" with lines lt 1 lw 3, '' using 1:3 title "Transpose" with lines lt 2 lw 3, '' using 1:4 title "SSE" with lines lt 3 lw 3, '' using 1:5 title "SSE + Pipeline" with lines lt 4 lw 3, '' using 1:7 title "ILP" with lines lt 5 lw 3

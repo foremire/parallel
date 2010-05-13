@@ -17,12 +17,12 @@ to parallel matrix multiplication. At last, we will report the
 performance in different aspect in detail.
 
 \section{Instruction Level Parallelism}
-Instruction level Parallelism is one of the most useful techniques which
-can be applied to improve the performance of parallel program greatly.
-In this program, we use gcc to generate the assembly code of the method
-which performs best in methods we proposed in the last report. Then we
-adjust the instructions as well as the instruction order to reach the
-best performance. Several methods were applied:
+Instruction level Parallelism (ILP) is one of the most useful techniques 
+which can be applied to improve the performance of parallel program 
+greatly. In this program, we use gcc to generate the assembly code of 
+the method which performs best in methods we proposed in the last 
+report. Then we adjust the instructions as well as the instruction 
+order to reach the best performance. Several methods were applied:
 
 \begin{enumerate}
 \item \textbf{Register Renaming}: reduce the data dependencies between 
@@ -259,64 +259,48 @@ addps   %xmm15, %xmm7
 In the above optimized code, the calculation was fully pipelined.
 
 \section{Experiment Results}
-\subsection{Experiment Setup}
-The matrix size is $1024\times 1024$ in float numbers and number of 
-threads is 32. We apply different optimization methods step by step, 
-and new optimization method is combined with the previous one. Since 
-it's limited by the space, we assign different method combinations to 
-different IDs, shown in Table~\ref{tab:methods}.
+\subsection{Overall Performance}
+We measure the execution time of different methods under different matrix sizes,
+and calculate the \textsc{SpeedUp} in the following way:
+\begin{equation}
+\textsc{SpeedUp} = \frac{T_{serial}}{T_{parallel}}
+\end{equation}
+The results were shown as below:
 
-\begin{table}[h!]
-	\small
+\begin{figure}[h!]
 	\begin{center}
-	\caption{\label{tab:methods} Method Combinations ID Map}
-	\begin{tabular}{|r|l|}
-		\hline
-		ID & Method Combination \\ \hline
-		0 &	Serial \\ \hline
-		1 & Baseline \\ \hline
-    2 & Transpose \\ \hline
-    3 & Transpose + SSE \\ \hline
-    4 & Transpose + SSE + Unrolling (4 cycles) + Scheduling \\ \hline
-    5 & Transpose + SSE + Unrolling (2 cycles) + Scheduling + 
-      Software pipelining \\ \hline
-    6 & Transpose + SSE + Unrolling (4 cycles) + Scheduling + ILP\\ \hline
-	\end{tabular}
+		\includegraphics[width=1.0\textwidth, angle=0]{performance.png}
+		\caption{\label{fig:performance}Performance comparision}
 	\end{center}
-\end{table}
+\end{figure}
 
-\subsection{Results}
-To explore the performances under different optimization settings by 
-the compiler, we run the experiments in two groups: one with 
-\texttt{-O3} option and the other without any optimization. For 
-each setup, we run the program 20 times and calculate the average 
-run time as the measurement of performance. The results are shown in 
-Table~\ref{tab:performance}.
+Obviously ILP outperforms other methods. The greatest \textsc{SpeedUp} was 91.03,
+reached with ILP when the matrix size is 1024. When the matrix size was small, 
+the performance was limited by the overhead of threads startup and synchronization
+when the threads exit. When the matrix size was larger than 1024, the performance
+decreased since cache misses and invalidation increased dramatically.
 
-\begin{table}[h!]
-	\small
+\subsection{MFLOPS}
+\begin{figure}[h!]
 	\begin{center}
-	\caption{\label{tab:performance} Performance Comparison}
-	\begin{tabular}{|r|r|r|r|r|}
-		\hline
-		 & \multicolumn{2}{c|}{NO Optimization} & \multicolumn{2}{c|}{-O3 Optimization} \\ \hline
-		Method & Time(s) & Speed Up & Time(s) & Speed Up \\ \hline
-		0  &  33.7776	& 1.0000		&19.4682		&	1.0000 \\ \hline
-		1  &		4.5976		&	7.3468		& 2.3256		&	8.3712 \\ \hline
-		2  &		4.1109  & 8.2166		&	0.4622		&	42.1209 \\ \hline
-		3  &		0.9353  & 36.1142	&	0.4656		&	41.8133 \\ \hline
-		4  &		0.6091  & \textbf{55.4550}	& 0.4208		&	\textbf {46.2649} \\ \hline
-		5  &		0.7761  & 43.5223	&	0.4660		&	41.7774 \\ \hline
-	\end{tabular}
+		\includegraphics[width=.7\textwidth, angle=0]{mflops.png}
+		\caption{\label{fig:mflops}MFLOPS with different matrix sizes}
 	\end{center}
-\end{table}
+\end{figure}
+
+\subsection{Cache Miss}
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=.7\textwidth, angle=0]{l2cachemiss.png}
+		\caption{\label{fig:l2cachemiss}L2 cache misses with different matrix sizes}
+	\end{center}
+\end{figure}
 
 \subsection{Analysis}
 Based on the observations in the results, we can draw the following interesting 
 conclusions:
 \begin{enumerate}
-\item Our current best performance (Method 4) without any optimization has reached 
-the 60\% of the best performance with -O3 optimization.
+\item ILP performs best.
 \end{enumerate}
 
 \section{Conclusion}
