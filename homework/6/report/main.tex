@@ -23,7 +23,7 @@ array with N numbers and produces these outputs:
 \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=1.1\textwidth, angle=0]{average.png}
-		\caption{\label{fig:average}Dataflow Program: Average of An Array}
+		\caption{\label{fig:average}Dataflow Graph: Average of An Array}
 	\end{center}
 \end{figure}
 \begin{equation}
@@ -34,7 +34,7 @@ array with N numbers and produces these outputs:
 \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=1.1\textwidth, angle=0]{std-deviation.png}
-		\caption{\label{fig:std-deviation}Dataflow Program: Standard Deviation of An Array}
+		\caption{\label{fig:std-deviation}Dataflow Graph: Standard Deviation of An Array}
 	\end{center}
 \end{figure}
 \begin{equation}
@@ -49,7 +49,7 @@ array with N numbers and produces these outputs:
 \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=1.1\textwidth, angle=0]{median.png}
-		\caption{\label{fig:median}Dataflow Program: Median of An Array}
+		\caption{\label{fig:median}Dataflow Graph: Median of An Array}
 	\end{center}
 \end{figure}
 The strategy of this program: from the beginning of the array, for each
@@ -83,7 +83,7 @@ locks using traditional atomic operations and shared memory.
 synchronize updates to the shared memory structures. Since data
 are shared and mutable, the synchronization overhead between the 
 memory and cache lines becomes the main problem of scalability since
-the complexity grows in $O(n^{2})$ with the thread number.
+the complexity grows in $O(n)$ with the processors number.
 
 \end{description}
 
