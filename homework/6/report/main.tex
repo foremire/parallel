@@ -15,15 +15,47 @@ xliu@ece.udel.edu}
 Write a dataflow program that receives a token that contains an 
 array with N numbers and produces these outputs:
 \begin{enumerate}
+\item The average of the numbers.
+\item The standard deviation of the numbers.
+\item The median of the numbers.
 \end{enumerate}
 \subsection{Average}
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=1.0\textwidth, angle=0]{average.png}
-		\caption{\label{fig:png}Dataflow Program of Array Average}
+		\includegraphics[width=1.1\textwidth, angle=0]{average.png}
+		\caption{\label{fig:average}Dataflow Program: Average of An Array}
 	\end{center}
 \end{figure}
+\begin{equation}
+\textsc{Average} = \frac{1}{N}\sum_{i=1}^{N}A[i]
+\end{equation}
+
 \subsection{Standard Deviation}
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=1.1\textwidth, angle=0]{std-deviation.png}
+		\caption{\label{fig:std-deviation}Dataflow Program: Standard Deviation of An Array}
+	\end{center}
+\end{figure}
+\begin{equation}
+\textsc{Average} = \bar{A} =  \frac{1}{N}\sum_{i=1}^{N}A[i]
+\end{equation}
+\begin{align}
+\textsc{StandardDeviation} &= \sqrt{\frac{1}{N}\sum_{i=1}^{N}(A[i]-\bar{A})^{2}} \nonumber\\
+&= \sqrt{\frac{1}{N}(\sum_{i=1}^{N}A[i]^{2})-\bar{A}^{2}}
+\end{align}
+
+\subsection{Median}
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=1.1\textwidth, angle=0]{median.png}
+		\caption{\label{fig:median}Dataflow Program: Median of An Array}
+	\end{center}
+\end{figure}
+The strategy of this program: from the beginning of the array, for each
+element, count how many elements are less than the current one. If there 
+are $\frac{N}{2}$ elements less than it, the current element is the median 
+of the array.
 
 \end{document}
 
