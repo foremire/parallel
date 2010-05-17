@@ -57,6 +57,38 @@ element, count how many elements are less than the current one. If there
 are $\frac{N}{2}$ elements less than it, the current element is the median 
 of the array.
 
+\section{Questions}
+\begin{enumerate}
+\item
+\begin{description}
+\item[Q: ] What is the difference between loop execution in static and 
+dynamic dataflow?
+\item[A: ] For static dataflow, the token only contains value while for 
+dynamic dataflow, the token contains both value and tag.
+\end{description}
+
+\item
+\begin{description}
+\item[Q: ] What are the advantages of architectures with single 
+assignment rules?
+\item[A: ] Single assignment rule can reduce the complexity of memory
+management, make the program much simpler and easier to optimize.
+\end{description}
+
+\item
+\begin{description}
+\item[Q: ] Explain why it is difficult to achieve scalability of 
+locks using traditional atomic operations and shared memory.
+\item[A: ] To implement lock with shared memory, we have to 
+synchronize updates to the shared memory structures. Since data
+are shared and mutable, the synchronization overhead between the 
+memory and cache lines becomes the main problem of scalability since
+the complexity grows in $O(n^{2})$ with the thread number.
+
+\end{description}
+
+\end{enumerate}
+
 \end{document}
 
 \begin{comment}
