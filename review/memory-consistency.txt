@@ -1,0 +1,4 @@
+
+Ref:
+
+1. http://www.cs.nmsu.edu/~pfeiffer/classes/573/notes/consistency.html
