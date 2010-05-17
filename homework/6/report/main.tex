@@ -82,7 +82,7 @@ locks using traditional atomic operations and shared memory.
 \item[A: ] To implement lock with shared memory, we have to 
 synchronize updates to the shared memory structures. Since data
 are shared and mutable, the synchronization overhead between the 
-memory and cache lines becomes the main problem of scalability since
+memory and cache lines becomes the bottleneck of scalability since
 the complexity grows in $O(n)$ with the processors number.
 
 \end{description}
